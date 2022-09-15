@@ -102,9 +102,9 @@ def getConfusionMatrix(predictionCreditabilities, actualCreditabilities):
         elif prediction == 0 and actual == 0:
             TN += 1
         elif prediction == 1 and actual == 0:
-            FP += 1
+            FN += 1
         else:
-            FN += 1   
+            FP += 1   
     return [TP, FP, TN, FN]
 # Genera la matriz de confusion
 def calculateActualClasses(atributtesValues, threshold):
