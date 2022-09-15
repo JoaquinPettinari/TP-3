@@ -1,6 +1,10 @@
 import pandas as pd
 import math
 from collections import Counter
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import plot_tree
+import matplotlib.pyplot as plt
 
 df = pd.read_csv("Training6.csv")
 print("\n Given Play Golf Dataset:\n\n", df)
@@ -69,8 +73,7 @@ def information_gain(df, split_attribute, target_attribute,battr):
     return old_entropy - new_entropy
 
 def id3(df, target_attribute, attribute_names, default_class=None,default_attr='S'):
-    
-    from collections import Counter
+        
     cnt = Counter(x for x in df[target_attribute])# class of YES /NO
     
     ## First check: Is this split of the dataset homogeneous?
@@ -114,7 +117,6 @@ def id3(df, target_attribute, attribute_names, default_class=None,default_attr='
 
 #Function to calulate the entropy of the given Dataset with respect to target attributes
 def entropy_dataset(a_list):  
-    from collections import Counter
 
     # Counter calculates the propotion of class
     cnt = Counter(x for x in a_list)   
@@ -151,20 +153,15 @@ print("Tree Keys      ➡",tree[attribute].keys())
 # Converting categorical variables into dummies/indicator variables
 
 
-from sklearn.model_selection import train_test_split
-
 X = df.drop('Creditability',axis=1)
 y = df['Creditability']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=101)
 
-from sklearn.tree import DecisionTreeClassifier
 
-dtree = DecisionTreeClassifier(criterion='entropy',max_depth=3)
+dtree = DecisionTreeClassifier(criterion='entropy',max_depth=4)
 dtree.fit(X_train,y_train)
 predictions = dtree.predict(X_test)
 
-from sklearn.tree import plot_tree
-import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(16,12))
 a = plot_tree(dtree, feature_names=df.columns, fontsize=12, filled=True, 
