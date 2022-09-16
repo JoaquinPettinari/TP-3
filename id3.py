@@ -61,12 +61,10 @@ class ID_3:
             
             # Split dataset-On each split, recursively call this algorithm.Populate the empty tree with subtrees, which
             # are the result of the recursive call
-            print(nodo_actual.imprimirme())
             for attr_val, data_subset in df.groupby(best_attr):
                 nodo_hijo = Nodo(attr_val)
                 nodo_actual.agregar_hijo(nodo_hijo)
-                subtree = self.aplicar_identificador(data_subset,target_attribute, remaining_attribute_names, nodo_hijo ,default_class,best_attr)
-                print(nodo_actual.valor, subtree)
+                subtree = self.aplicar_identificador(data_subset,target_attribute, remaining_attribute_names, nodo_hijo ,default_class)
                 tree[best_attr][attr_val] = subtree
             return tree
     
@@ -83,7 +81,7 @@ class ID_3:
         
         glist.reverse()
         nobs = len(df.index) * 1.0   
-        df_agg1=df_split.agg({target_attribute:lambda x:self.entropy_of_list(x, glist.pop())})
+        df_agg1=df_split.agg({target_attribute:lambda x:self.entropy_of_list(x)})
         df_agg2=df_split.agg({target_attribute :lambda x:len(x)/nobs})
         
         df_agg1.columns=['Entropy']

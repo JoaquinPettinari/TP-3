@@ -2,7 +2,7 @@ import pandas as pd
 from set import Set
 from id3 import ID_3
 
-df = pd.read_csv("example.csv")
+df = pd.read_csv("Test6.csv")
 #Nombre clase primaria
 clasePrimaria = df.keys()[-1]
 
