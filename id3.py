@@ -6,7 +6,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import plot_tree
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("Training6.csv")
+df = pd.read_csv("example.csv")
 print("\n Given Play Golf Dataset:\n\n", df)
 
 t = df.keys()[-1]
@@ -134,10 +134,10 @@ def entropy_dataset(a_list):
     
 # The initial entropy of the YES/NO attribute for our dataset.
 print("Entropy calculation for input dataset:\n")
-print(df['Creditability'])
+print(df['play'])
 
-total_entropy = entropy_dataset(df['Creditability'])
-print("\nTotal Entropy(S) of Creditability Dataset➡", total_entropy)
+total_entropy = entropy_dataset(df['play'])
+print("\nTotal Entropy(S) of play Dataset➡", total_entropy)
 print("=========================================================")
 ####################################################
 
@@ -149,21 +149,3 @@ pprint(tree)
 attribute = next(iter(tree))
 print("\nBest Attribute ➡",attribute)
 print("Tree Keys      ➡",tree[attribute].keys())
-
-# Converting categorical variables into dummies/indicator variables
-
-
-X = df.drop('Creditability',axis=1)
-y = df['Creditability']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=101)
-
-
-dtree = DecisionTreeClassifier(criterion='entropy',max_depth=4)
-dtree.fit(X_train,y_train)
-predictions = dtree.predict(X_test)
-
-
-fig = plt.figure(figsize=(16,12))
-a = plot_tree(dtree, feature_names=df.columns, fontsize=12, filled=True, 
-              class_names=['Not_Pay', 'Pay'])
-plt.show()
