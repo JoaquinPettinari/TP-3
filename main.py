@@ -1,17 +1,11 @@
+import pandas as pd
 from set import Set
-from id3 import ID3_C
-import numpy as np
+from id3 import ID_3
 
-datos = np.genfromtxt('Training.csv', delimiter=",", dtype="str")
+df = pd.read_csv("example.csv")
+clasePrimaria = df.keys()[-1]
 
-X     = datos[:, :-1]
-Y     = datos[:, -1]
-
-arbol = ID3_C()
-arbol.entrenar(X, Y)
-print(len(X))
-print(Y)
-
-salida = arbol.predecir(X)
-print(salida)
-print('Porcentaje de aciertos: ', 100 * sum(Y == salida)/X.shape[0])
+nombres_atributos = list(df.keys())
+arbol = ID_3(df, clasePrimaria, nombres_atributos)
+entropia_total = arbol.entropia_de_un_conjunto(df[clasePrimaria])
+print(entropia_total)
