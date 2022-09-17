@@ -128,10 +128,10 @@ class DecisionTree():
             print(tree.value)
 
         else:
-            print("X_"+self.col_names[tree.feature_index], "<=", tree.threshold, "?", tree.info_gain)
-            print("%sleft:" % (indent), end="")
+            print("X_"+self.col_names[tree.feature_index])
+            print("%sIzq:" % (indent), end="")
             self.print_tree(tree.left, indent + indent)
-            print("%sright:" % (indent), end="")
+            print("%sDer:" % (indent), end="")
             self.print_tree(tree.right, indent + indent)
     
     def fit(self, X, Y):
