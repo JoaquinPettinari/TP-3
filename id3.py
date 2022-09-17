@@ -137,8 +137,8 @@ class DecisionTreeClassifier():
     def predict(self, X):
         ''' function to predict new dataset '''
         
-        preditions = [self.make_prediction(x, self.root) for x in X]
-        return preditions
+        return [self.make_prediction(x, self.root) for x in X]
+        
     
     def make_prediction(self, x, tree):
         ''' function to predict a single data point '''
