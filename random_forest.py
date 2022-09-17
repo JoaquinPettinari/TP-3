@@ -88,5 +88,4 @@ class RandomForest:
         # for example we convert the above example to [[101] [101] [101] [101]]
         swapped_predictions = np.swapaxes(tree_predictions, 0, 1)        
         # Majority Voting: get the most common class of the swapped array        
-        y_predictions = [most_common_class(prediction) for prediction in swapped_predictions]
-        return y_predictions
+        return [most_common_class(prediction) for prediction in swapped_predictions]    
