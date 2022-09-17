@@ -170,3 +170,6 @@ class DecisionTreeClassifier():
     
     def obtener_accuracy(self,TP, FP, TN, FN):
         return (TP + TN) / (TP + FP + TN + FN)
+    
+    def obtener_precision(self, TP, FP):
+        return TP / (TP + FP)

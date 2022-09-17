@@ -16,7 +16,7 @@ print(prediccion_Y)
 print(actual_Y)
 TP, FP, TN, FN = classifier.obtener_metricas(prediccion_Y, actual_Y)
 accuracy = classifier.obtener_accuracy(TP, FP, TN, FN)
-from sklearn.metrics import accuracy_score
-print(accuracy)
-print(accuracy_score(actual_Y, prediccion_Y))
+precision = classifier.obtener_precision(TP, FP)
+print(precision)
+
 
