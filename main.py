@@ -1,10 +1,6 @@
 import pandas as pd
 from decision_tree import DecisionTree
-from sklearn.model_selection import train_test_split
 from random_forest import RandomForest
-import numpy as np
-import time
-from sklearn import datasets
 from utils import obtener_accuracy, obtener_metricas, obtener_precision
 
 atributos = ["Account Balance","Payment Status of Previous Credit","Value Savings/Stocks","Length of current employment","Sex & Marital Status","Guarantors","Creditability"]
