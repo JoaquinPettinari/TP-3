@@ -1,6 +1,8 @@
 import numpy as np
 from nodo import Node
-class DecisionTreeClassifier():
+from collections import Counter
+
+class DecisionTree():
     def __init__(self, col_names, min_samples_split=2, max_depth=2):
         ''' constructor '''
         
@@ -16,13 +18,14 @@ class DecisionTreeClassifier():
         ''' recursive function to build the tree ''' 
         X, Y = dataset[:,:-1], dataset[:,-1]
         num_samples, num_features = np.shape(X)
-        
         # split until stopping conditions are met
         if num_samples>=self.min_samples_split and curr_depth<=self.max_depth:
             # find the best split
             best_split = self.get_best_split(dataset, num_samples, num_features)
             # check if information gain is positive
-            if best_split["info_gain"]>0:
+            if(best_split == {}):
+                pass
+            elif best_split["info_gain"]>0:
                 # recur left
                 left_subtree = self.build_tree(best_split["dataset_left"], curr_depth+1)
                 # recur right
@@ -30,7 +33,6 @@ class DecisionTreeClassifier():
                 # return decision node
                 return Node(best_split["feature_index"], best_split["threshold"], 
                             left_subtree, right_subtree, best_split["info_gain"])
-        
         # compute leaf node
         leaf_value = self.calculate_leaf_value(Y)
         # return leaf node
@@ -38,7 +40,11 @@ class DecisionTreeClassifier():
     
     def get_best_split(self, dataset, num_samples, num_features):
         ''' function to find the best split '''
-        
+        common_class = Counter((num_samples, num_features))
+        # Get a list of tuple of most common labels
+        most_common_class_list = common_class.most_common(1)
+        # Return the first tuple and then the first dimension
+        most_common = most_common_class_list[0][0]    
         # dictionary to store the best split
         best_split = {}
         max_info_gain = -float("inf")
@@ -130,7 +136,6 @@ class DecisionTreeClassifier():
     
     def fit(self, X, Y):
         ''' function to train the tree '''
-        
         dataset = np.concatenate((X, Y), axis=1)
         self.root = self.build_tree(dataset)
     
@@ -148,28 +153,4 @@ class DecisionTreeClassifier():
         if feature_val<=tree.threshold:
             return self.make_prediction(x, tree.left)
         else:
-            return self.make_prediction(x, tree.right)
-    
-    def obtener_metricas(self, predictionCreditabilities, actualCreditabilities):
-        TP = 0
-        FP = 0 
-        TN = 0 
-        FN = 0
-        
-        for i, actual in enumerate(actualCreditabilities):
-            prediction = predictionCreditabilities[i]
-            if prediction == 1 and actual == 1:
-                TP += 1
-            elif prediction == 0 and actual == 0:
-                TN += 1
-            elif prediction == 1 and actual == 0:
-                FN += 1
-            else:
-                FP += 1   
-        return [TP, FP, TN, FN]
-    
-    def obtener_accuracy(self,TP, FP, TN, FN):
-        return (TP + TN) / (TP + FP + TN + FN)
-    
-    def obtener_precision(self, TP, FP):
-        return TP / (TP + FP)
+            return self.make_prediction(x, tree.right)    

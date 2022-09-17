@@ -2,8 +2,8 @@
 
 import numpy as np
 import time
-from DecisionTree import DecisionTree, most_common_class
-from sklearn.model_selection import train_test_split
+from collections import Counter
+from decision_tree import DecisionTree #, most_common_class
 
 
 def random_samples(X, y):
@@ -17,6 +17,18 @@ def random_samples(X, y):
     indices = np.random.choice(n_sample, size=n_sample, replace=True)
     return np.array(X)[indices.astype(int)], np.array(y)[indices.astype(int)]
 
+def most_common_class(y):
+    """
+    most_common_class method
+    :param y: {array-like}
+    :return: {int}
+    """
+    common_class = Counter(y)
+    # Get a list of tuple of most common labels
+    most_common_class_list = common_class.most_common(1)
+    # Return the first tuple and then the first dimension
+    most_common = most_common_class_list[0][0]
+    return most_common
 
 class RandomForest:
     """ Random Forests are an improvement over bagged decision trees """
@@ -33,7 +45,7 @@ class RandomForest:
     Bagging can be used for classification and regression problems.
     """
 
-    def __init__(self, n_trees=0, min_samples_split=2, max_depth=0):
+    def __init__(self, atributos, n_trees=0, min_samples_split=2, max_depth=0):
         """
         Class Constructor
         :param n_trees: {int}
@@ -44,6 +56,7 @@ class RandomForest:
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         self.models = []
+        self.atributos = atributos
 
     def fit(self, X, y):
         """
@@ -53,8 +66,7 @@ class RandomForest:
         :return: None
         """
         for _ in range(self.n_trees):
-            d_tree = DecisionTree(min_samples_split=self.min_samples_split,
-                                  max_depth=self.max_depth)
+            d_tree = DecisionTree(self.atributos, self.min_samples_split, self.max_depth)
             # Chose random samples
             x_sample, y_sample = random_samples(X, y)
             # Fit the tree - Train a CART model on each sample.
@@ -74,8 +86,7 @@ class RandomForest:
         tree_predictions = np.array([model.predict(X) for model in self.models])
         # Swap the predictions array axes:
         # for example we convert the above example to [[101] [101] [101] [101]]
-        swapped_predictions = np.swapaxes(tree_predictions, 0, 1)
-        # Majority Voting: get the most common class of the swapped array
+        swapped_predictions = np.swapaxes(tree_predictions, 0, 1)        
+        # Majority Voting: get the most common class of the swapped array        
         y_predictions = [most_common_class(prediction) for prediction in swapped_predictions]
-
         return y_predictions
