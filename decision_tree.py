@@ -40,12 +40,6 @@ class DecisionTree():
     
     def get_best_split(self, dataset, num_samples, num_features):
         ''' function to find the best split '''
-        common_class = Counter((num_samples, num_features))
-        # Get a list of tuple of most common labels
-        most_common_class_list = common_class.most_common(1)
-        # Return the first tuple and then the first dimension
-        most_common = most_common_class_list[0][0]    
-        # dictionary to store the best split
         best_split = {}
         max_info_gain = -float("inf")
         
