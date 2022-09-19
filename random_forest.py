@@ -58,7 +58,7 @@ class RandomForest:
         self.models = []
         self.atributos = atributos
 
-    def fit(self, X, y):
+    def entrenar(self, X, y):
         """
         fit method
         :param X: {array-like}
@@ -70,7 +70,7 @@ class RandomForest:
             # Chose random samples
             x_sample, y_sample = random_samples(X, y)
             # Fit the tree - Train a CART model on each sample.
-            d_tree.fit(x_sample, y_sample)
+            d_tree.entrenar(x_sample, y_sample)
             # Store the model in a list of models
             self.models.append(d_tree)
 

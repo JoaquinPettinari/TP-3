@@ -1,13 +1,13 @@
-class Node():
-    def __init__(self, feature_index=None, threshold=None, left=None, right=None, info_gain=None, value=None):
+class Nodo():
+    def __init__(self, indice_atributo=None, threshold=None, izquierdo=None, derecho=None, info_ganancia=None, valor=None):
         ''' constructor ''' 
         
         # for decision node
-        self.feature_index = feature_index
+        self.indice_atributo = indice_atributo
         self.threshold = threshold
-        self.left = left
-        self.right = right
-        self.info_gain = info_gain
+        self.izquierdo = izquierdo
+        self.derecho = derecho
+        self.info_ganancia = info_ganancia
         
         # for leaf node
-        self.value = value
+        self.valor = valor
