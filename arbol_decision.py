@@ -1,18 +1,13 @@
 import numpy as np
 from nodo import Nodo
-from collections import Counter
-
-class DecisionTree():
+class ArbolDecision():
     def __init__(self, nombre_columnas, min_de_observaciones=2, max_profundidad_del_arbol=2):
-        ''' constructor '''
-        
-        # initialize the root of the tree 
+        self.nombre_columnas = nombre_columnas        
+        # Inicialización de nodo Root
         self.root = None
-        
-        # stopping conditions
+        # Condiciones de corte
         self.min_samples_split = min_de_observaciones
         self.max_profundidad_del_arbol = max_profundidad_del_arbol
-        self.nombre_columnas = nombre_columnas
         
     # Función recursiva para construir el árbol
     def contruir_arbol(self, conjunto, profundidad=0):
@@ -38,8 +33,8 @@ class DecisionTree():
                             subarbol_izquierdo, subarbol_derecho, mejor_particion["info_ganancia"])
                 
         # Calcula valor de la hoja
-        valor_de_la_hoja = self.calculate_leaf_value(Y)
-        # return leaf node
+        valor_de_la_hoja = self.calcular_valor_hoja(Y)
+        # Devuelve Nodo Hoja
         return Nodo(valor=valor_de_la_hoja)
     
     # Función para obtener la mejor partición. Devuelve un objeto
@@ -53,15 +48,15 @@ class DecisionTree():
             #Valores únicos en la columna
             posibles_threshold = np.unique(valores_del_atributo)
             
-            # loop over all the feature values present in the data
+            # Loop de todos los valores de los atributos en este conjunto
             for threshold in posibles_threshold:
                 # Obtiene la partición
                 conjunto_izquierdo, conjunto_derecho = self.dividir(conjunto, indice_atributo, threshold)
                 # Verificación de que los hijos no sean nulos
                 if len(conjunto_izquierdo)>0 and len(conjunto_derecho)>0:
-                    y, left_y, right_y = conjunto[:, -1], conjunto_izquierdo[:, -1], conjunto_derecho[:, -1]
+                    y, Y_izquierdo, Y_derecho = conjunto[:, -1], conjunto_izquierdo[:, -1], conjunto_derecho[:, -1]
                     # Obtener ganancia
-                    info_ganancia_actual = self.obtener_ganancia(y, left_y, right_y)
+                    info_ganancia_actual = self.obtener_ganancia(y, Y_izquierdo, Y_derecho)
                     # Actualiza la mejor partición si hace falta
                     if info_ganancia_actual>max_info_ganancia:
                         mejor_particion["indice_atributo"] = indice_atributo
@@ -71,19 +66,18 @@ class DecisionTree():
                         mejor_particion["info_ganancia"] = info_ganancia_actual
                         max_info_ganancia = info_ganancia_actual
                         
-        # return best split
+        # Devuelve la mejor partición
         return mejor_particion
-    
+
+    # Función que particiona un conjunto en 2.    
     def dividir(self, conjunto, indice_atributo, valor):
-        ''' function to split the data '''
         # Crea los conjuntos por (List Comprehension). Devuelve fila si cumple con la condición
         conjunto_izquierdo = np.array([row for row in conjunto if row[indice_atributo]<=valor])
         conjunto_derecho = np.array([row for row in conjunto if row[indice_atributo]>valor])
         return conjunto_izquierdo, conjunto_derecho
     
-    def obtener_ganancia(self, parent, l_child, r_child):
-        ''' function to compute information gain '''
-        
+    # Función que devuelve la ganancia a través del índice gini
+    def obtener_ganancia(self, parent, l_child, r_child):        
         weight_l = len(l_child) / len(parent)
         weight_r = len(r_child) / len(parent)
         return self.indice_gini(parent) - (weight_l*self.indice_gini(l_child) + weight_r*self.indice_gini(r_child))
@@ -98,15 +92,13 @@ class DecisionTree():
             gini += p_clase**2
         return 1 - gini
         
-    def calculate_leaf_value(self, Y):
-        ''' function to compute leaf node '''
-        
+    #Función que devuelve el valor de la hoja
+    def calcular_valor_hoja(self, Y):                
         Y = list(Y)
         return max(Y, key=Y.count)
     
-    def print_tree(self, tree=None, indent=" "):
-        ''' function to print the tree '''
-        
+    # Función que imprime el arbol
+    def imprimir_arbol(self, tree=None, indent=" "):
         if not tree:
             tree = self.root
 
@@ -114,28 +106,26 @@ class DecisionTree():
             print(tree.valor)
 
         else:
-            print("X_"+self.nombre_columnas[tree.indice_atributo])
+            print(self.nombre_columnas[tree.indice_atributo])
             print("%sIzq:" % (indent), end="")
-            self.print_tree(tree.izquierdo, indent + indent)
+            self.imprimir_arbol(tree.izquierdo, indent + indent)
             print("%sDer:" % (indent), end="")
-            self.print_tree(tree.derecho, indent + indent)
+            self.imprimir_arbol(tree.derecho, indent + indent)
     
     def entrenar(self, X, Y):
         # Concatena la matriz de la clase primaria y los atributos
-        dataset = np.concatenate((X, Y), axis=1)
-        self.root = self.contruir_arbol(dataset)
+        conjunto = np.concatenate((X, Y), axis=1)
+        self.root = self.contruir_arbol(conjunto)
     
-    def predict(self, X):
-        ''' function to predict new dataset '''
-        
-        return [self.make_prediction(x, self.root) for x in X]
+    def predecir(self, X):
+        # Devuelve lista de valores de la clase primaria
+        return [self.hacer_una_prediccion(x, self.root) for x in X]
         
     
-    def make_prediction(self, x, tree:Nodo):
-        ''' function to predict a single data point '''        
+    def hacer_una_prediccion(self, x, tree:Nodo):
         if tree.valor!=None: return tree.valor
         feature_val = x[tree.indice_atributo]
         if feature_val<=tree.threshold:
-            return self.make_prediction(x, tree.izquierdo)
+            return self.hacer_una_prediccion(x, tree.izquierdo)
         else:
-            return self.make_prediction(x, tree.derecho)
+            return self.hacer_una_prediccion(x, tree.derecho)

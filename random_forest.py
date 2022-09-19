@@ -3,7 +3,7 @@
 import numpy as np
 import time
 from collections import Counter
-from decision_tree import DecisionTree #, most_common_class
+from arbol_decision import ArbolDecision #, most_common_class
 
 
 def random_samples(X, y):
@@ -66,7 +66,7 @@ class RandomForest:
         :return: None
         """
         for _ in range(self.n_trees):
-            d_tree = DecisionTree(self.atributos, self.min_samples_split, self.max_depth)
+            d_tree = ArbolDecision(self.atributos, self.min_samples_split, self.max_depth)
             # Chose random samples
             x_sample, y_sample = random_samples(X, y)
             # Fit the tree - Train a CART model on each sample.
@@ -74,7 +74,7 @@ class RandomForest:
             # Store the model in a list of models
             self.models.append(d_tree)
 
-    def predict(self, X):
+    def predecir(self, X):
         """
         predict method
         :param X: {array-like}
@@ -83,7 +83,7 @@ class RandomForest:
         """ Calculate the average prediction from each model """
         # Make a predictions - Predict for each model in the list:
         # for example 3 trees with 4 samples will give: [[1111] [0000] [1111]]
-        tree_predictions = np.array([model.predict(X) for model in self.models])
+        tree_predictions = np.array([model.predecir(X) for model in self.models])
         # Swap the predictions array axes:
         # for example we convert the above example to [[101] [101] [101] [101]]
         swapped_predictions = np.swapaxes(tree_predictions, 0, 1)        
