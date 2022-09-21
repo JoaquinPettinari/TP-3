@@ -1,131 +1,144 @@
-import numpy as np
-from nodo import Nodo
-class ArbolDecision():
-    def __init__(self, nombre_columnas, min_de_observaciones=2, max_profundidad_del_arbol=2):
-        self.nombre_columnas = nombre_columnas        
-        # Inicialización de nodo Root
-        self.root = None
-        # Condiciones de corte
-        self.min_samples_split = min_de_observaciones
-        self.max_profundidad_del_arbol = max_profundidad_del_arbol
-        
-    # Función recursiva para construir el árbol
-    def contruir_arbol(self, conjunto, profundidad=0):
-        #Valores de X = valores de los atributos. Y = Clase primaria
-        X, Y = conjunto[:,:-1], conjunto[:,-1]   
-        # El shape devuelve una tupla de los valores declarados abajo (x,y)    
-        cant_filas_en_un_conjunto, cant_de_atributos = np.shape(X)
-        # Validación para del árbol, que no se pase de la profundidad y tenga un mínimo de datos
-        if cant_filas_en_un_conjunto>=self.min_samples_split and profundidad<=self.max_profundidad_del_arbol:
-            # Busca el mejor valor para hacer la división del árbol. Devuelve un objeto con los valores y la división del árbol
-            mejor_particion = self.obtener_mejor_particion(conjunto, cant_de_atributos)            
-            # Validación de error
-            if(mejor_particion == {}):
-                pass
-            # Mira si el peso es positivo
-            elif mejor_particion["info_ganancia"]>0:                
-                # Recursividad del árbol izquierdo 
-                subarbol_izquierdo = self.contruir_arbol(mejor_particion["conjunto_izquierdo"], profundidad+1)
-                # Recursividad del árbol derecho
-                subarbol_derecho = self.contruir_arbol(mejor_particion["conjunto_derecho"], profundidad+1)
-                # Devuelve el nodo decisión.
-                return Nodo(mejor_particion["indice_atributo"], mejor_particion["threshold"], 
-                            subarbol_izquierdo, subarbol_derecho, mejor_particion["info_ganancia"])
-                
-        # Calcula valor de la hoja
-        valor_de_la_hoja = self.calcular_valor_hoja(Y)
-        # Devuelve Nodo Hoja
-        return Nodo(valor=valor_de_la_hoja)
+import pandas as pd #for manipulating the csv data
+import numpy as np #for mathematical calculation
+
+train_data_m = pd.read_csv("example.csv")
+test_data_m = pd.read_csv("example.csv")
+
+def calc_total_entropy(train_data, label, class_list):
+    total_row = train_data.shape[0]
+    total_entr = 0
     
-    # Función para obtener la mejor partición. Devuelve un objeto
-    def obtener_mejor_particion(self, conjunto, cant_atributos):
-        mejor_particion = {}
-        max_info_ganancia = -float("inf")
-        # Iteración para la cantidad de atributos(iteración por columna)
-        for indice_atributo in range(cant_atributos):
-            # (Por iteración) Obtiene los valores de la columna
-            valores_del_atributo = conjunto[:, indice_atributo]
-            #Valores únicos en la columna
-            posibles_threshold = np.unique(valores_del_atributo)
+    for c in class_list:
+        total_class_count = train_data[train_data[label] == c].shape[0]
+        total_class_entr = - (total_class_count/total_row)*np.log2(total_class_count/total_row) 
+        total_entr += total_class_entr
+    
+    return total_entr
+
+def calc_entropy(feature_value_data, label, class_list):
+    class_count = feature_value_data.shape[0]
+    entropy = 0
+    
+    for c in class_list:
+        label_class_count = feature_value_data[feature_value_data[label] == c].shape[0]
+    
+        entropy_class = 0
+        if label_class_count != 0:
+            probability_class = label_class_count/class_count
+            entropy_class = - probability_class * np.log2(probability_class) 
+        
+        entropy += entropy_class
+        
+    return entropy
+
+def calc_info_gain(feature_name, train_data, label, class_list):
+    feature_value_list = train_data[feature_name].unique()
+    total_row = train_data.shape[0]
+    feature_info = 0.0
+    
+    for feature_value in feature_value_list:
+        feature_value_data = train_data[train_data[feature_name] == feature_value]
+        feature_value_count = feature_value_data.shape[0]
+        feature_value_entropy = calc_entropy(feature_value_data, label, class_list)
+        feature_value_probability = feature_value_count/total_row
+        feature_info += feature_value_probability * feature_value_entropy
+        
+    return calc_total_entropy(train_data, label, class_list) - feature_info
+
+def find_most_informative_feature(train_data, label, class_list):
+    feature_list = train_data.columns.drop(label)
+    max_info_gain = -1
+    max_info_feature = None
+    
+    for feature in feature_list:  
+        feature_info_gain = calc_info_gain(feature, train_data, label, class_list)
+        if max_info_gain < feature_info_gain:
+            max_info_gain = feature_info_gain
+            max_info_feature = feature
             
-            # Loop de todos los valores de los atributos en este conjunto
-            for threshold in posibles_threshold:
-                # Obtiene la partición
-                conjunto_izquierdo, conjunto_derecho = self.dividir(conjunto, indice_atributo, threshold)
-                # Verificación de que los hijos no sean nulos
-                if len(conjunto_izquierdo)>0 and len(conjunto_derecho)>0:
-                    y, Y_izquierdo, Y_derecho = conjunto[:, -1], conjunto_izquierdo[:, -1], conjunto_derecho[:, -1]
-                    # Obtener ganancia
-                    info_ganancia_actual = self.obtener_ganancia(y, Y_izquierdo, Y_derecho)
-                    # Actualiza la mejor partición si hace falta
-                    if info_ganancia_actual>max_info_ganancia:
-                        mejor_particion["indice_atributo"] = indice_atributo
-                        mejor_particion["threshold"] = threshold
-                        mejor_particion["conjunto_izquierdo"] = conjunto_izquierdo
-                        mejor_particion["conjunto_derecho"] = conjunto_derecho
-                        mejor_particion["info_ganancia"] = info_ganancia_actual
-                        max_info_ganancia = info_ganancia_actual
-                        
-        # Devuelve la mejor partición
-        return mejor_particion
+    return max_info_feature
 
-    # Función que particiona un conjunto en 2.    
-    def dividir(self, conjunto, indice_atributo, valor):
-        # Crea los conjuntos por (List Comprehension). Devuelve fila si cumple con la condición
-        conjunto_izquierdo = np.array([row for row in conjunto if row[indice_atributo]<=valor])
-        conjunto_derecho = np.array([row for row in conjunto if row[indice_atributo]>valor])
-        return conjunto_izquierdo, conjunto_derecho
+def generate_sub_tree(feature_name, train_data, label, class_list):
+    feature_value_count_dict = train_data[feature_name].value_counts(sort=False)
+    tree = {}
     
-    # Función que devuelve la ganancia a través del índice gini
-    def obtener_ganancia(self, parent, l_child, r_child):        
-        weight_l = len(l_child) / len(parent)
-        weight_r = len(r_child) / len(parent)
-        return self.indice_gini(parent) - (weight_l*self.indice_gini(l_child) + weight_r*self.indice_gini(r_child))
+    for feature_value, count in feature_value_count_dict.iteritems():
+        feature_value_data = train_data[train_data[feature_name] == feature_value]
         
-    # Calcular indice gini
-    def indice_gini(self, y):                
-        valores_de_la_clase = np.unique(y)
-        gini = 0
-        for valor in valores_de_la_clase:            
-            # Frecuencia relativa
-            p_clase = len(y[y == valor]) / len(y)
-            gini += p_clase**2
-        return 1 - gini
+        assigned_to_node = False
+        for c in class_list:
+            class_count = feature_value_data[feature_value_data[label] == c].shape[0]
+
+            if class_count == count:
+                tree[feature_value] = c
+                train_data = train_data[train_data[feature_name] != feature_value]
+                assigned_to_node = True
+        if not assigned_to_node:
+            tree[feature_value] = "?"
+            
+    return tree, train_data
+
+def make_tree(root, prev_feature_value, train_data, label, class_list):
+    if train_data.shape[0] != 0:
+        max_info_feature = find_most_informative_feature(train_data, label, class_list)
+        tree, train_data = generate_sub_tree(max_info_feature, train_data, label, class_list)
+        next_root = None
         
-    #Función que devuelve el valor de la hoja
-    def calcular_valor_hoja(self, Y):                
-        Y = list(Y)
-        return max(Y, key=Y.count)
-    
-    # Función que imprime el arbol
-    def imprimir_arbol(self, tree=None, indent=" "):
-        if not tree:
-            tree = self.root
-
-        if tree.valor is not None:
-            print(tree.valor)
-
+        if prev_feature_value != None:
+            root[prev_feature_value] = dict()
+            root[prev_feature_value][max_info_feature] = tree
+            next_root = root[prev_feature_value][max_info_feature]
         else:
-            print(self.nombre_columnas[tree.indice_atributo])
-            print("%sIzq:" % (indent), end="")
-            self.imprimir_arbol(tree.izquierdo, indent + indent)
-            print("%sDer:" % (indent), end="")
-            self.imprimir_arbol(tree.derecho, indent + indent)
-    
-    def entrenar(self, X, Y):
-        # Concatena la matriz de la clase primaria y los atributos
-        conjunto = np.concatenate((X, Y), axis=1)
-        self.root = self.contruir_arbol(conjunto)
-    
-    def predecir(self, X):
-        # Devuelve lista de valores de la clase primaria
-        return [self.hacer_una_prediccion(x, self.root) for x in X]
+            root[max_info_feature] = tree
+            next_root = root[max_info_feature]
         
+        for node, branch in list(next_root.items()):
+            if branch == "?":
+                feature_value_data = train_data[train_data[max_info_feature] == node]
+                make_tree(next_root, node, feature_value_data, label, class_list)
+
+def id3(train_data_m, label):
+    train_data = train_data_m.copy()
+    tree = {}
+    class_list = train_data[label].unique()
+    make_tree(tree, None, train_data_m, label, class_list)
     
-    def hacer_una_prediccion(self, x, tree:Nodo):
-        if tree.valor!=None: return tree.valor
-        feature_val = x[tree.indice_atributo]
-        if feature_val<=tree.threshold:
-            return self.hacer_una_prediccion(x, tree.izquierdo)
+    return tree
+
+def predict(tree, instance):
+    if not isinstance(tree, dict):
+        return tree
+    else:
+        root_node = next(iter(tree))
+        feature_value = instance[root_node]
+        if feature_value in tree[root_node]:
+            return predict(tree[root_node][feature_value], instance)
         else:
-            return self.hacer_una_prediccion(x, tree.derecho)
+            return None
+
+def evaluate(tree, test_data_m, label):
+    correct_preditct = 0
+    wrong_preditct = 0
+    for index, row in test_data_m.iterrows():
+        result = predict(tree, test_data_m.iloc[index])
+        if result == test_data_m[label].iloc[index]:
+            correct_preditct += 1
+        else:
+            wrong_preditct += 1
+    accuracy = correct_preditct / (correct_preditct + wrong_preditct)
+    return accuracy
+
+def imprimir_arbol(arbol):
+    for x in arbol:
+        print (x)
+        for y in arbol[x]:
+            print (y,':',arbol[x][y])
+
+
+primaryClass = train_data_m.iloc[-1]
+
+tree = id3(train_data_m, 'PlayGolf')
+
+imprimir_arbol(tree)
+accuracy = evaluate(tree, test_data_m, 'PlayGolf')
+print("accuracy:", accuracy)
