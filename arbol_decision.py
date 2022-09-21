@@ -1,13 +1,9 @@
 import pandas as pd #for manipulating the csv data
 import numpy as np #for mathematical calculation
 
-train_data_m = pd.read_csv("example.csv")
-test_data_m = pd.read_csv("example.csv")
-
 def calc_total_entropy(train_data, label, class_list):
     total_row = train_data.shape[0]
     total_entr = 0
-    
     for c in class_list:
         total_class_count = train_data[train_data[label] == c].shape[0]
         total_class_entr = - (total_class_count/total_row)*np.log2(total_class_count/total_row) 
@@ -79,22 +75,48 @@ def generate_sub_tree(feature_name, train_data, label, class_list):
     return tree, train_data
 
 def make_tree(root, prev_feature_value, train_data, label, class_list):
+    print("Root: ", root)
+    print("prev_feature_value: ",prev_feature_value)
+    print("train_data: ", train_data)
+    print("label: ", label)
+    print("class_list: ", class_list)
+    
+    # Entra al if si hay datos
     if train_data.shape[0] != 0:
+        print("Shape: ", train_data.shape)
+        # Trae próximo atributo padre
         max_info_feature = find_most_informative_feature(train_data, label, class_list)
+        print("Max info: ", max_info_feature)
         tree, train_data = generate_sub_tree(max_info_feature, train_data, label, class_list)
+        print("Tree: ", tree)
+        print("Train Data: ", train_data)
         next_root = None
+        if(len(train_data) == 0):
+            return root
         
         if prev_feature_value != None:
             root[prev_feature_value] = dict()
+            print("New dict", root[prev_feature_value])
             root[prev_feature_value][max_info_feature] = tree
+            print("Arbol en dict", root[prev_feature_value][max_info_feature])
             next_root = root[prev_feature_value][max_info_feature]
+            print("Next root: ", next_root)
+            
         else:
+            # Concatena el los valores del atributo padre con el arbol
             root[max_info_feature] = tree
+            print("Root en max info:" , root)
             next_root = root[max_info_feature]
+            print("Next Root: ", next_root)
         
         for node, branch in list(next_root.items()):
+            print("Branch: ", branch)
+            print("Node: ", node)
+            
             if branch == "?":
                 feature_value_data = train_data[train_data[max_info_feature] == node]
+                print("FEATURE: ")
+                print(feature_value_data)
                 make_tree(next_root, node, feature_value_data, label, class_list)
 
 def id3(train_data_m, label):
@@ -117,28 +139,14 @@ def predict(tree, instance):
             return None
 
 def evaluate(tree, test_data_m, label):
-    correct_preditct = 0
-    wrong_preditct = 0
+    actualCreditabilities = []
     for index, row in test_data_m.iterrows():
         result = predict(tree, test_data_m.iloc[index])
-        if result == test_data_m[label].iloc[index]:
-            correct_preditct += 1
-        else:
-            wrong_preditct += 1
-    accuracy = correct_preditct / (correct_preditct + wrong_preditct)
-    return accuracy
+        actualCreditabilities.append(result)        
+    return actualCreditabilities
 
 def imprimir_arbol(arbol):
     for x in arbol:
         print (x)
         for y in arbol[x]:
             print (y,':',arbol[x][y])
-
-
-primaryClass = train_data_m.iloc[-1]
-
-tree = id3(train_data_m, 'PlayGolf')
-
-imprimir_arbol(tree)
-accuracy = evaluate(tree, test_data_m, 'PlayGolf')
-print("accuracy:", accuracy)
