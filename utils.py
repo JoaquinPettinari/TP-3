@@ -3,19 +3,19 @@
 positive = 1
 negative = 0
 
-def obtener_metricas(predictionCreditabilities, actualCreditabilities):
+def obtener_metricas(actualCreditabilities, predictionCreditabilities):
         TP = 0
         FP = 0 
         TN = 0 
         FN = 0
         
-        for i, actual in enumerate(actualCreditabilities):
-            prediction = predictionCreditabilities[i]
-            if prediction == positive and actual == positive:
+        for i, prediction in enumerate(predictionCreditabilities):
+            actual = actualCreditabilities[i]
+            if actual == positive and prediction == positive:
                 TP += 1
-            elif prediction == negative and actual == negative:
+            elif actual == negative and prediction == negative:
                 TN += 1
-            elif prediction == positive and actual == negative:
+            elif actual == positive and prediction == negative:
                 FN += 1
             else:
                 FP += 1   

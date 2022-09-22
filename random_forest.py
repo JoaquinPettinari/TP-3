@@ -89,3 +89,60 @@ class RandomForest:
         swapped_predictions = np.swapaxes(tree_predictions, 0, 1)        
         # Majority Voting: get the most common class of the swapped array        
         return [most_common_class(prediction) for prediction in swapped_predictions]    
+
+
+def RandomForest_Train(dataset,number_of_Trees):
+    #Create a list in which the single forests are stored
+    random_forest_sub_tree = []
+    
+    #Create a number of n models
+    for i in range(number_of_Trees):
+        #Create a number of bootstrap sampled datasets from the original dataset 
+        bootstrap_sample = dataset.sample(frac=1,replace=True)
+        
+        #Create a training and a testing datset by calling the train_test_split function
+        bootstrap_training_data = train_test_split(bootstrap_sample)[0]
+        bootstrap_testing_data = train_test_split(bootstrap_sample)[1] 
+        
+        
+        #Grow a tree model for each of the training data
+        #We implement the subspace sampling in the ID3 algorithm itself. Hence take a look at the ID3 algorithm above!
+        random_forest_sub_tree.append(ID3(bootstrap_training_data,bootstrap_training_data,bootstrap_training_data.drop(labels=['target'],axis=1).columns))
+        
+    return random_forest_sub_tree
+
+
+        
+random_forest = RandomForest_Train(dataset,50)
+
+ 
+
+#######Predict a new query instance###########
+def RandomForest_Predict(query,random_forest,default='p'):
+    predictions = []
+    for tree in random_forest:
+        predictions.append(predict(query,tree,default))
+    return sps.mode(predictions)[0][0]
+
+
+query = testing_data.iloc[0,:].drop('target').to_dict()
+query_target = testing_data.iloc[0,0]
+print('target: ',query_target)
+prediction = RandomForest_Predict(query,random_forest)
+print('prediction: ',prediction)
+
+
+
+#######Test the model on the testing data and return the accuracy###########
+def RandomForest_Test(data,random_forest):
+    data['predictions'] = None
+    for i in range(len(data)):
+        query = data.iloc[i,:].drop('target').to_dict()
+        data.loc[i,'predictions'] = RandomForest_Predict(query,random_forest,default='p')
+    accuracy = sum(data['predictions'] == data['target'])/len(data)*100
+    #print('The prediction accuracy is: ',sum(data['predictions'] == data['target'])/len(data)*100,'%')
+    return accuracy
+        
+        
+        
+RandomForest_Test(testing_data,random_forest)
