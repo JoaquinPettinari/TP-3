@@ -222,7 +222,7 @@ a training and a testing set. The test function takes two parameters, which are 
 
 ###################
 
-def getActualClass(data,tree):
+def getPrediccionClase(data,tree):
     #Create new query instances by simply removing the target feature column from the original dataset and 
     #convert it to a dictionary
     queries = data.iloc[:,:-1].to_dict(orient = "records")
