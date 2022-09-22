@@ -1,82 +1,57 @@
 import pandas as pd
-from arbol_decision import ArbolDecision
-from random_forest import RandomForest
-from utils import obtener_accuracy, obtener_metricas, obtener_precision
+from arbol_decision import ID3, getPrediccionClase
+from random_forest import RandomForest_Predict, getPrediccionClasses, RandomForest_Train
+from utils import obtener_metricas, obtener_accuracy, obtener_precision
+from pprint import pprint
 
-atributos = ["Account Balance","Payment Status of Previous Credit","Value Savings/Stocks","Length of current employment","Sex & Marital Status","Guarantors","Creditability"]
+Training_Data = pd.read_csv("TrainingCompleto.csv")
+Test_Data = pd.read_csv("TestCompleto.csv")
+primaryClass = Training_Data.keys()[-1]
 
-TrainingData = pd.read_csv("TrainingCompleto.csv", skiprows=1, header=None, names=atributos)
-X_Training = TrainingData.iloc[:, :-1].values
-Y_Training = TrainingData.iloc[:, -1].values.reshape(-1,1)
+ID3_Training_Tree = ID3(Training_Data,Training_Data,Training_Data.columns[:-1])
+ID3_Test_Tree = ID3(Test_Data,Test_Data,Test_Data.columns[:-1])
 
-TestData = pd.read_csv("TestCompleto.csv", skiprows=1, header=None, names=atributos)
-X_Test = TestData.iloc[:, :-1].values
-Y_Test = TestData.iloc[:, -1].values.reshape(-1,1)
-
-arbol_Training = ArbolDecision(atributos, min_de_observaciones=3, max_profundidad_del_arbol=3)
-arbol_Training.entrenar(X_Training,Y_Training)
-actual_Training = TrainingData.iloc[:, -1].tolist()
-prediccion_Training = arbol_Training.predecir(X_Training)
+actual_Y_Training = Training_Data.iloc[:, -1].tolist()
+actual_Y_Test = Test_Data.iloc[:, -1].tolist()
 
 
-arbol_Test = ArbolDecision(atributos, min_de_observaciones=3, max_profundidad_del_arbol=3)
-arbol_Test.entrenar(X_Test,Y_Test)
-actual_Test = TestData.iloc[:, -1].tolist()
-prediccion_ID3_Test = arbol_Test.predecir(X_Test)
-
-TP_ID3_Training, FP_ID3_Training, TN_ID3_Training, FN_ID3_Training = obtener_metricas(prediccion_Training, actual_Training)
-accuracy_ID3_Training = obtener_accuracy(TP_ID3_Training, FP_ID3_Training, TN_ID3_Training, FN_ID3_Training)
-precision_ID3_Training = obtener_precision(TP_ID3_Training, FP_ID3_Training)
-
-
-TP_ID3_Test, FP_ID3_Test, TN_ID3_Test, FN_ID3_Test = obtener_metricas(prediccion_ID3_Test, actual_Test)
-accuracy_ID3_Test = obtener_accuracy(TP_ID3_Test, FP_ID3_Test, TN_ID3_Test, FN_ID3_Test)
-precision_ID3_Test = obtener_precision(TP_ID3_Test, FP_ID3_Test)
-
-print("ID3 - Training")
-print("Arbol: ", arbol_Training.imprimir_arbol())
-print("Matriz confusion: ")
+print("ID3 - Training: ")
+pprint(ID3_Training_Tree)
+prediccion_Y_Training = getPrediccionClase(Training_Data,ID3_Training_Tree)
+TP_ID3_Training, FP_ID3_Training, TN_ID3_Training, FN_ID3_Training = obtener_metricas(actual_Y_Training, prediccion_Y_Training)
+print("Matriz: ")
 print(TP_ID3_Training, FP_ID3_Training)
 print(FN_ID3_Training, TN_ID3_Training)
-print("Accuracy: ", accuracy_ID3_Training)
-print("Precision: ", precision_ID3_Training)
-print("\n")
+print("ACCURACY: ", obtener_accuracy(TP_ID3_Training, FP_ID3_Training, TN_ID3_Training, FN_ID3_Training))
+
 print("ID3 - Test")
-print("Arbol: ", arbol_Test.imprimir_arbol())
-print("Matriz confusion: ")
+pprint(ID3_Test_Tree)
+prediccion_Y_Test = getPrediccionClase(Test_Data,ID3_Test_Tree)
+TP_ID3_Test, FP_ID3_Test, TN_ID3_Test, FN_ID3_Test = obtener_metricas(actual_Y_Test, prediccion_Y_Test)
+print("Matriz: ")
 print(TP_ID3_Test, FP_ID3_Test)
 print(FN_ID3_Test, TN_ID3_Test)
-print("Accuracy: ", accuracy_ID3_Test)
-print("Precision: ", precision_ID3_Test)
-print("\n ------------------- \n" )
+print("ACCURACY: ", obtener_accuracy(TP_ID3_Test, FP_ID3_Test, TN_ID3_Test, FN_ID3_Test))
 
-
-random_Forest_Training = RandomForest(atributos, n_trees=6, max_depth=10)
-random_Forest_Training.entrenar(X_Training,Y_Training)
-Y_RF_Prediction_Training = random_Forest_Training.predecir(X_Training)
-
-TP_RF_Training, FP_RF_Training, TN_RF_Training, FN_RF_Training = obtener_metricas(Y_RF_Prediction_Training, actual_Training)
-accuracy_RF_Training = obtener_accuracy(TP_RF_Training, FP_RF_Training, TN_RF_Training, FN_RF_Training)
-precision_RF_Training = obtener_precision(TP_RF_Training, FP_RF_Training)
-
-random_Forest_Test = RandomForest(atributos, n_trees=6, max_depth=10)
-random_Forest_Test.entrenar(X_Test, Y_Test)
-Y_RF_Prediction_Test = random_Forest_Test.predecir(X_Test)
-
-TP_RF_Test, FP_RF_Test, TN_RF_Test, FN_RF_Test = obtener_metricas(Y_RF_Prediction_Test, actual_Test)
-accuracy_RF_Test = obtener_accuracy(TP_RF_Test, FP_RF_Test, TN_RF_Test, FN_RF_Test)
-precision_RF_Test = obtener_precision(TP_RF_Test, FP_RF_Test)
-
+print("------------------------------------------------------------------------------------------------------------")
 print("Random Forest - Training")
-print("Matriz confusion: ")
-print(TP_RF_Training, FP_RF_Training) 
-print(FN_RF_Training,TN_RF_Training)
-print("Accuracy: ", accuracy_RF_Training)
-print("Precision: ",precision_RF_Training)
-print("\n")
+RF_Training = RandomForest_Train(Training_Data, 20)
+RF_Test = RandomForest_Train(Test_Data, 20)
+
+pred_Y_RF_Training = getPrediccionClasses(Training_Data, RF_Training)
+TP_RF_TRAINING, FP_RF_TRAINING, TN_RF_TRAINING, FN_RF_TRAINING = obtener_metricas(actual_Y_Training, pred_Y_RF_Training)
+print("Matriz: ")
+print(TP_RF_TRAINING, FP_RF_TRAINING)
+print(FN_RF_TRAINING , TN_RF_TRAINING)
+print("ACCURACY: ", obtener_accuracy(TP_RF_TRAINING, FP_RF_TRAINING, TN_RF_TRAINING, FN_RF_TRAINING))
+print("PRECISION: ", obtener_precision(TP_RF_TRAINING, FP_RF_TRAINING))
+
+    
 print("Random Forest - Test")
-print("Matriz confusion: ")
+pred_Y_RF_Test = getPrediccionClasses(Test_Data, RF_Test)
+TP_RF_Test, FP_RF_Test, TN_RF_Test, FN_RF_Test = obtener_metricas(actual_Y_Test, pred_Y_RF_Test)
+print("Matriz: ")
 print(TP_RF_Test, FP_RF_Test)
 print(FN_RF_Test, TN_RF_Test)
-print("Accuracy: ", accuracy_RF_Test)
-print("Precision: ", precision_RF_Test)
+print("ACCURACY: ", obtener_accuracy(TP_RF_Test, FP_RF_Test, TN_RF_Test, FN_RF_Test))
+print("PRECISION: ", obtener_precision(TP_RF_Test, FP_RF_Test))

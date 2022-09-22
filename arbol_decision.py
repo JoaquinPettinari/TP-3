@@ -1,131 +1,237 @@
+"""
+Make the imports of python packages needed
+"""
+import pandas as pd
 import numpy as np
-from nodo import Nodo
-class ArbolDecision():
-    def __init__(self, nombre_columnas, min_de_observaciones=2, max_profundidad_del_arbol=2):
-        self.nombre_columnas = nombre_columnas        
-        # Inicialización de nodo Root
-        self.root = None
-        # Condiciones de corte
-        self.min_samples_split = min_de_observaciones
-        self.max_profundidad_del_arbol = max_profundidad_del_arbol
-        
-    # Función recursiva para construir el árbol
-    def contruir_arbol(self, conjunto, profundidad=0):
-        #Valores de X = valores de los atributos. Y = Clase primaria
-        X, Y = conjunto[:,:-1], conjunto[:,-1]   
-        # El shape devuelve una tupla de los valores declarados abajo (x,y)    
-        cant_filas_en_un_conjunto, cant_de_atributos = np.shape(X)
-        # Validación para del árbol, que no se pase de la profundidad y tenga un mínimo de datos
-        if cant_filas_en_un_conjunto>=self.min_samples_split and profundidad<=self.max_profundidad_del_arbol:
-            # Busca el mejor valor para hacer la división del árbol. Devuelve un objeto con los valores y la división del árbol
-            mejor_particion = self.obtener_mejor_particion(conjunto, cant_de_atributos)            
-            # Validación de error
-            if(mejor_particion == {}):
-                pass
-            # Mira si el peso es positivo
-            elif mejor_particion["info_ganancia"]>0:                
-                # Recursividad del árbol izquierdo 
-                subarbol_izquierdo = self.contruir_arbol(mejor_particion["conjunto_izquierdo"], profundidad+1)
-                # Recursividad del árbol derecho
-                subarbol_derecho = self.contruir_arbol(mejor_particion["conjunto_derecho"], profundidad+1)
-                # Devuelve el nodo decisión.
-                return Nodo(mejor_particion["indice_atributo"], mejor_particion["threshold"], 
-                            subarbol_izquierdo, subarbol_derecho, mejor_particion["info_ganancia"])
-                
-        # Calcula valor de la hoja
-        valor_de_la_hoja = self.calcular_valor_hoja(Y)
-        # Devuelve Nodo Hoja
-        return Nodo(valor=valor_de_la_hoja)
+import math
+
+
+#Import the dataset and define the feature as well as the target datasets / columns#
+#Import all columns omitting the fist which consists the names of the animals
+
+#primaryClass = "PlayGolf"
+primaryClass = "Creditability"
+
+
+# Calcula la entropía de una columna
+def entropy(target_col):  
+    elements,counts = np.unique(target_col,return_counts = True)
+    entropy = np.sum([(-counts[i]/np.sum(counts))*np.log2(counts[i]/np.sum(counts)) for i in range(len(elements))])
+    return entropy
+
+def InfoGain(data,split_attribute_name,target_name= primaryClass):
+    """
+    Calculate the information gain of a dataset. This function takes three parameters:
+    1. data = The dataset for whose feature the IG should be calculated
+    2. split_attribute_name = the name of the feature for which the information gain should be calculated
+    3. target_name = the name of the target feature. The default for this example is "class"
+    """    
+    #Calculate the entropy of the total dataset
+    total_entropy = entropy(data[target_name])
     
-    # Función para obtener la mejor partición. Devuelve un objeto
-    def obtener_mejor_particion(self, conjunto, cant_atributos):
-        mejor_particion = {}
-        max_info_ganancia = -float("inf")
-        # Iteración para la cantidad de atributos(iteración por columna)
-        for indice_atributo in range(cant_atributos):
-            # (Por iteración) Obtiene los valores de la columna
-            valores_del_atributo = conjunto[:, indice_atributo]
-            #Valores únicos en la columna
-            posibles_threshold = np.unique(valores_del_atributo)
+    ##Calculate the entropy of the dataset
+    
+    #Calculate the values and the corresponding counts for the split attribute 
+    vals,counts= np.unique(data[split_attribute_name],return_counts=True)
+    
+    #Calculate the weighted entropy
+    Weighted_Entropy = np.sum([(counts[i]/np.sum(counts))*entropy(data.where(data[split_attribute_name]==vals[i]).dropna()[target_name]) for i in range(len(vals))])
+    
+    #Calculate the information gain
+    Information_Gain = total_entropy - Weighted_Entropy
+    return Information_Gain
+       
+###################
+
+###################
+
+
+def ID3(data,originaldata,features,target_attribute_name= primaryClass ,parent_node_class = None):
+    """
+    ID3 Algorithm: This function takes five paramters:
+    1. data = the data for which the ID3 algorithm should be run --> In the first run this equals the total dataset
+ 
+    2. originaldata = This is the original dataset needed to calculate the mode target feature value of the original dataset
+    in the case the dataset delivered by the first parameter is empty
+
+    3. features = the feature space of the dataset . This is needed for the recursive call since during the tree growing process
+    we have to remove features from our dataset --> Splitting at each node
+
+    4. target_attribute_name = the name of the target attribute
+
+    5. parent_node_class = This is the value or class of the mode target feature value of the parent node for a specific node. This is 
+    also needed for the recursive call since if the splitting leads to a situation that there are no more features left in the feature
+    space, we want to return the mode target feature value of the direct parent node.
+    """   
+    #Define the stopping criteria --> If one of this is satisfied, we want to return a leaf node#
+    
+    #If all target_values have the same value, return this value
+    if len(np.unique(data[target_attribute_name])) <= 1:
+        return np.unique(data[target_attribute_name])[0]
+    
+    #If the dataset is empty, return the mode target feature value in the original dataset
+    elif len(data)==0:
+        return np.unique(originaldata[target_attribute_name])[np.argmax(np.unique(originaldata[target_attribute_name],return_counts=True)[1])]
+    
+    #If the feature space is empty, return the mode target feature value of the direct parent node --> Note that
+    #the direct parent node is that node which has called the current run of the ID3 algorithm and hence
+    #the mode target feature value is stored in the parent_node_class variable.
+    
+    elif len(features) ==0:
+        return parent_node_class
+    
+    #If none of the above holds true, grow the tree!
+    
+    else:
+        #Set the default value for this node --> The mode target feature value of the current node
+        parent_node_class = np.unique(data[target_attribute_name])[np.argmax(np.unique(data[target_attribute_name],return_counts=True)[1])]
+        
+        #Select the feature which best splits the dataset
+        item_values = [InfoGain(data,feature,target_attribute_name) for feature in features] #Return the information gain values for the features in the dataset
+        best_feature_index = np.argmax(item_values)
+        best_feature = features[best_feature_index]
+        
+        #Create the tree structure. The root gets the name of the feature (best_feature) with the maximum information
+        #gain in the first run
+        tree = {best_feature:{}}
+        
+        
+        #Remove the feature with the best inforamtion gain from the feature space
+        features = [i for i in features if i != best_feature]
+        
+        #Grow a branch under the root node for each possible value of the root node feature
+        
+        for value in np.unique(data[best_feature]):
+            value = value
+            #Split the dataset along the value of the feature with the largest information gain and therwith create sub_datasets
+            sub_data = data.where(data[best_feature] == value).dropna()
             
-            # Loop de todos los valores de los atributos en este conjunto
-            for threshold in posibles_threshold:
-                # Obtiene la partición
-                conjunto_izquierdo, conjunto_derecho = self.dividir(conjunto, indice_atributo, threshold)
-                # Verificación de que los hijos no sean nulos
-                if len(conjunto_izquierdo)>0 and len(conjunto_derecho)>0:
-                    y, Y_izquierdo, Y_derecho = conjunto[:, -1], conjunto_izquierdo[:, -1], conjunto_derecho[:, -1]
-                    # Obtener ganancia
-                    info_ganancia_actual = self.obtener_ganancia(y, Y_izquierdo, Y_derecho)
-                    # Actualiza la mejor partición si hace falta
-                    if info_ganancia_actual>max_info_ganancia:
-                        mejor_particion["indice_atributo"] = indice_atributo
-                        mejor_particion["threshold"] = threshold
-                        mejor_particion["conjunto_izquierdo"] = conjunto_izquierdo
-                        mejor_particion["conjunto_derecho"] = conjunto_derecho
-                        mejor_particion["info_ganancia"] = info_ganancia_actual
-                        max_info_ganancia = info_ganancia_actual
-                        
-        # Devuelve la mejor partición
-        return mejor_particion
+            #Call the ID3 algorithm for each of those sub_datasets with the new parameters --> Here the recursion comes in!
+            subtree = ID3(sub_data,originaldata,features,target_attribute_name,parent_node_class)
+            
+            #Add the sub tree, grown from the sub_dataset to the tree under the root node
+            tree[best_feature][value] = subtree
+            
+        return(tree)    
+                
+###################
 
-    # Función que particiona un conjunto en 2.    
-    def dividir(self, conjunto, indice_atributo, valor):
-        # Crea los conjuntos por (List Comprehension). Devuelve fila si cumple con la condición
-        conjunto_izquierdo = np.array([row for row in conjunto if row[indice_atributo]<=valor])
-        conjunto_derecho = np.array([row for row in conjunto if row[indice_atributo]>valor])
-        return conjunto_izquierdo, conjunto_derecho
-    
-    # Función que devuelve la ganancia a través del índice gini
-    def obtener_ganancia(self, parent, l_child, r_child):        
-        weight_l = len(l_child) / len(parent)
-        weight_r = len(r_child) / len(parent)
-        return self.indice_gini(parent) - (weight_l*self.indice_gini(l_child) + weight_r*self.indice_gini(r_child))
-        
-    # Calcular indice gini
-    def indice_gini(self, y):                
-        valores_de_la_clase = np.unique(y)
-        gini = 0
-        for valor in valores_de_la_clase:            
-            # Frecuencia relativa
-            p_clase = len(y[y == valor]) / len(y)
-            gini += p_clase**2
-        return 1 - gini
-        
-    #Función que devuelve el valor de la hoja
-    def calcular_valor_hoja(self, Y):                
-        Y = list(Y)
-        return max(Y, key=Y.count)
-    
-    # Función que imprime el arbol
-    def imprimir_arbol(self, tree=None, indent=" "):
-        if not tree:
-            tree = self.root
+###################
 
-        if tree.valor is not None:
-            print(tree.valor)
 
-        else:
-            print(self.nombre_columnas[tree.indice_atributo])
-            print("%sIzq:" % (indent), end="")
-            self.imprimir_arbol(tree.izquierdo, indent + indent)
-            print("%sDer:" % (indent), end="")
-            self.imprimir_arbol(tree.derecho, indent + indent)
     
-    def entrenar(self, X, Y):
-        # Concatena la matriz de la clase primaria y los atributos
-        conjunto = np.concatenate((X, Y), axis=1)
-        self.root = self.contruir_arbol(conjunto)
     
-    def predecir(self, X):
-        # Devuelve lista de valores de la clase primaria
-        return [self.hacer_una_prediccion(x, self.root) for x in X]
+def predict(query,tree,default = 1):
+    """
+    Prediction of a new/unseen query instance. This takes two parameters:
+    1. The query instance as a dictionary of the shape {"feature_name":feature_value,...}
+
+    2. The tree 
+
+
+    We do this also in a recursive manner. That is, we wander down the tree and check if we have reached a leaf or if we are still in a sub tree. 
+    Since this is a important step to understand, the single steps are extensively commented below.
+
+    1.Check for every feature in the query instance if this feature is existing in the tree.keys() for the first call, 
+    tree.keys() only contains the value for the root node 
+    --> if this value is not existing, we can not make a prediction and have to 
+    return the default value which is the majority value of the target feature
+
+    2. First of all we have to take care of a important fact: Since we train our model with a database A and then show our model
+    a unseen query it may happen that the feature values of these query are not existing in our tree model because non of the
+    training instances has had such a value for this specific feature. 
+    For instance imagine the situation where your model has only seen animals with one to four
+    legs - The "legs" node in your model will only have four outgoing branches (from one to four). If you now show your model
+    a new instance (animal) which has for the legs feature the vale 5, you have to tell your model what to do in such a 
+    situation because otherwise there is no classification possible because in the classification step you try to 
+    run down the outgoing branch with the value 5 but there is no such a branch. Hence: Error and no Classification!
+    We can address this issue with a classification value of for instance (999) which tells us that there is no classification
+    possible or we assign the most frequent target feature value of our dataset used to train the model. Or, in for instance 
+    medical application we can return the most worse case - just to make sure... 
+    We can also return the most frequent value of the direct parent node. To make a long story short, we have to tell the model 
+    what to do in this situation.
+    In our example, since we are dealing with animal species where a false classification is not that critical, we will assign
+    the value 1 which is the value for the mammal species (for convenience).
+
+    3. Address the key in the tree which fits the value for key --> Note that key == the features in the query. 
+    Because we want the tree to predict the value which is hidden under the key value (imagine you have a drawn tree model on 
+    the table in front of you and you have a query instance for which you want to predict the target feature 
+    - What are you doing? - Correct:
+    You start at the root node and wander down the tree comparing your query to the node values. Hence you want to have the
+    value which is hidden under the current node. If this is a leaf, perfect, otherwise you wander the tree deeper until you
+    get to a leaf node. 
+    Though, you want to have this "something" [either leaf or sub_tree] which is hidden under the current node
+    and hence we must address the node in the tree which == the key value from our query instance. 
+    This is done with tree[keys]. Next you want to run down the branch of this node which is equal to the value given "behind"
+    the key value of your query instance e.g. if you find "legs" == to tree.keys() that is, for the first run == the root node.
+    You want to run deeper and therefore you have to address the branch at your node whose value is == to the value behind key.
+    This is done with query[key] e.g. query[key] == query['legs'] == 0 --> Therewith we run down the branch of the node with the
+    value 0. Summarized, in this step we want to address the node which is hidden behind a specific branch of the root node (in the first run)
+    this is done with: result = [key][query[key]]
+
+    4. As said in the 2. step, we run down the tree along nodes and branches until we get to a leaf node.
+    That is, if result = tree[key][query[key]] returns another tree object (we have represented this by a dict object --> 
+    that is if result is a dict object) we know that we have not arrived at a root node and have to run deeper the tree. 
+    Okay... Look at your drawn tree in front of you... what are you doing?...well, you run down the next branch... 
+    exactly as we have done it above with the slight difference that we already have passed a node and therewith 
+    have to run only a fraction of the tree --> You clever guy! That "fraction of the tree" is exactly what we have stored
+    under 'result'.
+    So we simply call our predict method using the same query instance (we do not have to drop any features from the query
+    instance since for instance the feature for the root node will not be available in any of the deeper sub_trees and hence 
+    we will simply not find that feature) as well as the "reduced / sub_tree" stored in result.
+
+    SUMMARIZED: If we have a query instance consisting of values for features, we take this features and check if the 
+    name of the root node is equal to one of the query features.
+    If this is true, we run down the root node outgoing branch whose value equals the value of query feature == the root node.
+    If we find at the end of this branch a leaf node (not a dict object) we return this value (this is our prediction).
+    If we instead find another node (== sub_tree == dict objct) we search in our query for the feature which equals the value 
+    of that node. Next we look up the value of our query feature and run down the branch whose value is equal to the 
+    query[key] == query feature value. And as you can see this is exactly the recursion we talked about
+    with the important fact that for each node we run down the tree, we check only the nodes and branches which are 
+    below this node and do not run the whole tree beginning at the root node 
+    --> This is why we re-call the classification function with 'result'
+    """
+    
+    
+    #1.
+    for key in list(query.keys()):
+        if key in list(tree.keys()):
+            #2.
+            try:
+                result = tree[key][query[key]] 
+            except:
+                return default
+  
+            #3.
+            result = tree[key][query[key]]
+            #4.
+            if isinstance(result,dict):
+                return predict(query,result)
+
+            else:
+                return math.trunc(result)
+
         
+        
+"""
+Check the accuracy of our prediction.
+The train_test_split function takes the dataset as parameter which should be divided into
+a training and a testing set. The test function takes two parameters, which are the testing data as well as the tree model.
+"""
+###################
+
+###################
+
+def getPrediccionClase(data,tree):
+    #Create new query instances by simply removing the target feature column from the original dataset and 
+    #convert it to a dictionary
+    queries = data.iloc[:,:-1].to_dict(orient = "records")
+    #Create a empty DataFrame in whose columns the prediction of the tree are stored
+    predicted = []
     
-    def hacer_una_prediccion(self, x, tree:Nodo):
-        if tree.valor!=None: return tree.valor
-        feature_val = x[tree.indice_atributo]
-        if feature_val<=tree.threshold:
-            return self.hacer_una_prediccion(x, tree.izquierdo)
-        else:
-            return self.hacer_una_prediccion(x, tree.derecho)
+    #Calculate the prediction accuracy
+    for i in range(len(data)):
+        predicted.append(predict(queries[i],tree,1.0))
+    
+    return predicted
+    
