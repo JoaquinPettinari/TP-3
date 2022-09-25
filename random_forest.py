@@ -3,7 +3,7 @@
 import numpy as np
 import time
 from collections import Counter
-from arbol_decision import ID3, predict
+from arbol_decision import ID3, predecir
 import scipy.stats as sps
 
 
@@ -32,10 +32,8 @@ def RandomForest_Train(dataset,number_of_Trees):
         #bootstrap_training_data = train_test_split(bootstrap_sample)[0]
         #bootstrap_testing_data = train_test_split(bootstrap_sample)[1] 
         
-        
         #Grow a tree model for each of the training data
         #We implement the subspace sampling in the ID3 algorithm itself. Hence take a look at the ID3 algorithm above!
-        print(bootstrap_sample)
         random_forest_sub_tree.append(ID3(bootstrap_sample,bootstrap_sample,bootstrap_sample.drop(labels=['Creditability'],axis=1).columns))
         
     return random_forest_sub_tree
@@ -48,7 +46,7 @@ def RandomForest_Train(dataset,number_of_Trees):
 def RandomForest_Predict(query,random_forest,default='p'):
     predictions = []
     for tree in random_forest:
-        predictions.append(predict(query,tree,default))
+        predictions.append(predecir(query,tree,default))
     return sps.mode(predictions, keepdims=True)[0][0]
 
 
@@ -56,10 +54,10 @@ def RandomForest_Predict(query,random_forest,default='p'):
 
 
 #######Test the model on the testing data and return the accuracy###########
-def getPrediccionClasses(data,random_forest):
+def getPrediccionClasses(data,random_forest, primaryClass):
     predictions = []
     for i in range(len(data)):
-        query = data.iloc[i,:].drop('Creditability').to_dict()
+        query = data.iloc[i,:].drop(primaryClass).to_dict()
         predictions.append(RandomForest_Predict(query,random_forest,default='p'))
     #accuracy = sum(predictions == data['Creditability'])/len(data)*100
     #print('The prediction accuracy is: ',sum(data['predictions'] == data['target'])/len(data)*100,'%')
