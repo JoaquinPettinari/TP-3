@@ -34,7 +34,9 @@ def ID3(conjunto,conjunto_original,atributos,nombre_atributo_objetivo=clase_prim
         return clase_nodo_padre
     # Si no cumple, se construye el árbol    
     else:
-        #Guarda el valor del nodo - return_counts = Devuelve la cantidad de veces que aparece un valor único en el array
+        # Guarda el valor del nodo 
+        # return_counts = Devuelve la cantidad de veces que aparece un valor único en el array
+        # En python si haces [0,1,2][1] -> 1
         clase_nodo_padre = np.unique(conjunto[nombre_atributo_objetivo])[np.argmax(np.unique(conjunto[nombre_atributo_objetivo],return_counts=True)[1])]
         # Selecciona cual es la mejor división para el conjunto
         # Devuelve los valores de la información de la ganancia para los atributos del conjunto 
@@ -54,7 +56,7 @@ def ID3(conjunto,conjunto_original,atributos,nombre_atributo_objetivo=clase_prim
             subtree = ID3(sub_conjunto,conjunto_original,atributos,nombre_atributo_objetivo,clase_nodo_padre)
             #Agrega el subarbol al dict
             tree[mejor_atributo][hijo] = subtree
-        return(tree)    
+        return(tree)            
     
 def predecir(conjunto,arbol,default = 1):  
     for atributo in list(conjunto.keys()):

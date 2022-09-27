@@ -7,16 +7,14 @@ from arbol_decision import ID3, predecir
 import scipy.stats as sps
 
 
-def random_samples(X, y):
-    """
-    random_samples method
-    :param X: {array-like}
-    :param y: {array-like}
-    :return: {array-like}, {array-like}
-    """
-    n_sample = X.shape[0]
-    indices = np.random.choice(n_sample, size=n_sample, replace=True)
-    return np.array(X)[indices.astype(int)], np.array(y)[indices.astype(int)]
+def bootstraping(conjunto):
+    nuevo_conjunto = []
+    for i in range(len(conjunto)):        
+        nuevo_conjunto.append([])
+        for k in range(len(conjunto.keys())):
+            valores_unicos = np.unique(conjunto[conjunto.keys()[k]])
+            nuevo_conjunto[i].append(np.random.choice(valores_unicos))    
+    return np.array(nuevo_conjunto)
 
 
 def RandomForest_Train(dataset,number_of_Trees):
@@ -26,7 +24,11 @@ def RandomForest_Train(dataset,number_of_Trees):
     #Create a number of n models
     for i in range(number_of_Trees):
         #Create a number of bootstrap sampled datasets from the original dataset 
-        bootstrap_sample = dataset.sample(frac=1,replace=True)
+        bootstrap_sample = bootstraping(dataset)
+        print("-----------")
+        print(dataset)
+        print(bootstrap_sample)
+        print("-----------")
         
         #Create a training and a testing datset by calling the train_test_split function
         #bootstrap_training_data = train_test_split(bootstrap_sample)[0]
@@ -37,10 +39,6 @@ def RandomForest_Train(dataset,number_of_Trees):
         random_forest_sub_tree.append(ID3(bootstrap_sample,bootstrap_sample,bootstrap_sample.drop(labels=['Creditability'],axis=1).columns))
         
     return random_forest_sub_tree
-
-
-        
- 
 
 #######Predict a new query instance###########
 def RandomForest_Predict(query,random_forest,default='p'):
