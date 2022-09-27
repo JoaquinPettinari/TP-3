@@ -8,13 +8,11 @@ import scipy.stats as sps
 
 
 def bootstraping(conjunto):
-    nuevo_conjunto = []
     for i in range(len(conjunto)):        
-        nuevo_conjunto.append([])
-        for k in range(len(conjunto.keys())):
+        for k in range(len(conjunto.keys()) - 1):
             valores_unicos = np.unique(conjunto[conjunto.keys()[k]])
-            nuevo_conjunto[i].append(np.random.choice(valores_unicos))    
-    return np.array(nuevo_conjunto)
+            conjunto[conjunto.keys()[k]][i] = np.random.choice(valores_unicos)
+    return conjunto
 
 
 def RandomForest_Train(dataset,number_of_Trees):
@@ -23,10 +21,11 @@ def RandomForest_Train(dataset,number_of_Trees):
     
     #Create a number of n models
     for i in range(number_of_Trees):
-        #Create a number of bootstrap sampled datasets from the original dataset 
+        # Crea los datos aleatorios del bootstraping
+        #bootstrap_sample = dataset.sample(frac=1,replace=True)
         bootstrap_sample = bootstraping(dataset)
+
         print("-----------")
-        print(dataset)
         print(bootstrap_sample)
         print("-----------")
         
@@ -36,9 +35,13 @@ def RandomForest_Train(dataset,number_of_Trees):
         
         #Grow a tree model for each of the training data
         #We implement the subspace sampling in the ID3 algorithm itself. Hence take a look at the ID3 algorithm above!
-        random_forest_sub_tree.append(ID3(bootstrap_sample,bootstrap_sample,bootstrap_sample.drop(labels=['Creditability'],axis=1).columns))
+        random_forest_sub_tree.append(ID3(bootstrap_sample,bootstrap_sample,dataset.drop(labels=['Creditability'],axis=1).columns))
         
     return random_forest_sub_tree
+
+
+        
+ 
 
 #######Predict a new query instance###########
 def RandomForest_Predict(query,random_forest,default='p'):
