@@ -13,16 +13,12 @@ def entropia(columna_objetivo):
     return np.sum([(-cantidad[i]/np.sum(cantidad))*np.log2(cantidad[i]/np.sum(cantidad)) for i in range(len(elementos))])
 
 def info_ganancia(conjunto,nombre_atributo_divisor,clase_objetivo= clase_primaria):
-    
     #Entropía de la clase primaria
     entropia_total = entropia(conjunto[clase_objetivo])
-    
     #Valores únicos del atributo
     valores,cantidad= np.unique(conjunto[nombre_atributo_divisor],return_counts=True)
-
     # Fórmula de la ganancia h(s) - E de valores(A)
     peso_entropia = np.sum([(cantidad[i]/np.sum(cantidad))*entropia(conjunto.where(conjunto[nombre_atributo_divisor]==valores[i]).dropna()[clase_objetivo]) for i in range(len(valores))])
-    
     # Función ganancia
     return entropia_total - peso_entropia
 

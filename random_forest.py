@@ -23,10 +23,8 @@ def RandomForest(dataset,numbero_de_arboles):
     # For para la cantidad de arboles a crear
     for i in range(numbero_de_arboles):
         # Crea los datos aleatorios del bootstraping
-        # De esta forma usa los mismos datos pero mezclados
-        #conjunto_bootstrap = dataset.sample(frac=1,replace=True)
-        # Con esta función crea random 100% dentro de los valores de la columna
-        conjunto_bootstrap = bootstraping(dataset)
+        # De esta forma usa datos random del conjunto
+        conjunto_bootstrap = dataset.sample(frac=1,replace=True)
         # Se agrega a la lista el arbol que se crea con el conjunto de datos          #Lista de atributos sin la clase primaria
         arboles_random_forest.append(arbol_decision(conjunto_bootstrap,conjunto_bootstrap,dataset.drop(labels=[clase_primaria],axis=1).columns))
     
