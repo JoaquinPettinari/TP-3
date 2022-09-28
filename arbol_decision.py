@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 
-#clase_primaria = "PlayGolf"
+#clase_primaria = "Juega"
 clase_primaria = "Creditability"
 
 
@@ -58,16 +58,20 @@ def ID3(conjunto,conjunto_original,atributos,nombre_atributo_objetivo=clase_prim
             tree[mejor_atributo][hijo] = subtree
         return(tree)            
     
-def predecir(conjunto,arbol,default = 1):  
-    for atributo in list(conjunto.keys()):
+def predecir(fila,arbol,default = 1): 
+    #Por cada atributo de la fila
+    for atributo in list(fila.keys()):
+        # SI existe en el arbol
         if atributo in list(arbol.keys()):
             try:
-                valor = arbol[atributo][conjunto[atributo]] 
+                #Devuelve el valor que encuentra en el arbol
+                valor = arbol[atributo][fila[atributo]] 
             except:
                 return default
+            # Si es un dict (no valor exacto) hace la recursión con eso
             if isinstance(valor,dict):
-                return predecir(conjunto,valor)
-
+                return predecir(fila,valor)
+            # Si no, devuelve el valor
             else:
                 return math.trunc(valor)
 
@@ -78,6 +82,7 @@ def obtener_clase_predecida(data,arbol):
     predicted = []    
     # Itera cada columna y la predice
     for i in range(len(data)):
+        # Agrega la predicción al árbol
         predicted.append(predecir(conjunto_sin_clase_primaria[i],arbol,1))
     return predicted
     

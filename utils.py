@@ -1,5 +1,5 @@
-#positive = "Yes"
-#negative = "No"
+#positive = "si"
+#negative = "no"
 positive = 1
 negative = 0
 

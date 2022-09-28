@@ -2,9 +2,13 @@
 
 import numpy as np
 from arbol_decision import ID3, predecir
-import scipy.stats as sps
+from collections import Counter
+
+#clase_primaria = 'Juega'
+clase_primaria = 'Creditability'
 
 def bootstraping(conjunto):
+    # Función que crea valores aleatorios para todas las columnas menos la Creditability
     for i in range(len(conjunto)):        
         for k in range(len(conjunto.keys()) - 1):
             atributo = conjunto.keys()[k]
@@ -24,24 +28,25 @@ def RandomForest_Train(dataset,numbero_de_arboles):
         # Con esta función crea random 100% dentro de los valores de la columna
         conjunto_bootstrap = bootstraping(dataset)
         # Se agrega a la lista el arbol que se crea con el conjunto de datos
-        arboles_random_forest.append(ID3(conjunto_bootstrap,conjunto_bootstrap,dataset.drop(labels=['Creditability'],axis=1).columns))
+        arboles_random_forest.append(ID3(conjunto_bootstrap,conjunto_bootstrap,dataset.drop(labels=[clase_primaria],axis=1).columns))
     
     return arboles_random_forest
 
-def RandomForest_predecir(query,random_forest,default='p'):
+def RandomForest_predecir(fila_dict,random_forest,default='p'):    
     predictions = []
+    #Por cada arbol que hay 
     for tree in random_forest:
-        predictions.append(predecir(query,tree,default))
-    print(predictions)
-    print(sps.mode(predictions, keepdims=True))
-    return sps.mode(predictions, keepdims=True)[0][0]
+        # Se obtiene la predicción de la fila en cada árbol
+        predictions.append(predecir(fila_dict,tree,default))
+    #Devuelve la predicción mas común [1,0,1,1,0] -> [(1,3)] -> [(1,3)][0][0] -> 1
+    return Counter(predictions).most_common(1)[0][0]
 
 def RF_obtener_clase_predecida(conjunto,random_forest, clase_primaria):
+    # Devuelve una lista con las clases predecidas
     predicciones = []
     for i in range(len(conjunto)):
-        query = conjunto.iloc[i,:].drop(clase_primaria).to_dict()
-        predicciones.append(RandomForest_predecir(query,random_forest,default='p'))
-    #accuracy = sum(predictions == data['Creditability'])/len(data)*100
-    #print('The prediction accuracy is: ',sum(data['predictions'] == data['target'])/len(data)*100,'%')
+        #Se queda con los valores de la fila sin la clase primaria y lo transforma a un dict
+        fila_dict = conjunto.iloc[i,:].drop(clase_primaria).to_dict()
+        predicciones.append(RandomForest_predecir(fila_dict,random_forest,default='p'))
     return predicciones
         
