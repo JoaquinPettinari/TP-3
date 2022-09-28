@@ -1,7 +1,7 @@
 # File name: RandomForest.py
 
 import numpy as np
-from arbol_decision import ID3, predecir
+from arbol_decision import arbol_decision, predecir
 from collections import Counter
 
 #clase_primaria = 'Juega'
@@ -9,14 +9,14 @@ clase_primaria = 'Creditability'
 
 def bootstraping(conjunto):
     # Función que crea valores aleatorios para todas las columnas menos la Creditability
-    for i in range(len(conjunto)):        
+    for i in range(len(conjunto)):
         for k in range(len(conjunto.keys()) - 1):
             atributo = conjunto.keys()[k]
             valores_unicos = np.unique(conjunto[atributo])
             conjunto[atributo][i] = np.random.choice(valores_unicos)
     return conjunto
 
-def RandomForest_Train(dataset,numbero_de_arboles):
+def RandomForest(dataset,numbero_de_arboles):
     # Lista para ir guardando cada árbol
     arboles_random_forest = []
     
@@ -27,8 +27,8 @@ def RandomForest_Train(dataset,numbero_de_arboles):
         #conjunto_bootstrap = dataset.sample(frac=1,replace=True)
         # Con esta función crea random 100% dentro de los valores de la columna
         conjunto_bootstrap = bootstraping(dataset)
-        # Se agrega a la lista el arbol que se crea con el conjunto de datos
-        arboles_random_forest.append(ID3(conjunto_bootstrap,conjunto_bootstrap,dataset.drop(labels=[clase_primaria],axis=1).columns))
+        # Se agrega a la lista el arbol que se crea con el conjunto de datos          #Lista de atributos sin la clase primaria
+        arboles_random_forest.append(arbol_decision(conjunto_bootstrap,conjunto_bootstrap,dataset.drop(labels=[clase_primaria],axis=1).columns))
     
     return arboles_random_forest
 

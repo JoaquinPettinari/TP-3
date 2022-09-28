@@ -9,6 +9,7 @@ clase_primaria = "Creditability"
 # Calcula la entropía de una columna
 def entropia(columna_objetivo):  
     elementos,cantidad = np.unique(columna_objetivo,return_counts = True)
+    # Por fórmula es esta cuenta
     return np.sum([(-cantidad[i]/np.sum(cantidad))*np.log2(cantidad[i]/np.sum(cantidad)) for i in range(len(elementos))])
 
 def info_ganancia(conjunto,nombre_atributo_divisor,clase_objetivo= clase_primaria):
@@ -25,12 +26,12 @@ def info_ganancia(conjunto,nombre_atributo_divisor,clase_objetivo= clase_primari
     # Función ganancia
     return entropia_total - peso_entropia
 
-def ID3(conjunto,conjunto_original,atributos,nombre_atributo_objetivo=clase_primaria ,clase_nodo_padre = None):
+def arbol_decision(conjunto,conjunto_original,atributos,nombre_atributo_objetivo=clase_primaria ,clase_nodo_padre = None):
     # (En el conjunto) Si en la columna del atributo objetivo hay un solo valor corta la recursión y devuelve el valor
     if len(np.unique(conjunto[nombre_atributo_objetivo])) <= 1:        
         return np.unique(conjunto[nombre_atributo_objetivo])[0]
     #Si los atributos vienen vacíos, Devuelve el valor del padre    
-    elif len(atributos) ==0:        
+    elif len(atributos) ==0:
         return clase_nodo_padre
     # Si no cumple, se construye el árbol    
     else:
@@ -40,26 +41,31 @@ def ID3(conjunto,conjunto_original,atributos,nombre_atributo_objetivo=clase_prim
         clase_nodo_padre = np.unique(conjunto[nombre_atributo_objetivo])[np.argmax(np.unique(conjunto[nombre_atributo_objetivo],return_counts=True)[1])]
         # Selecciona cual es la mejor división para el conjunto
         # Devuelve los valores de la información de la ganancia para los atributos del conjunto 
-        valores_atributo = [info_ganancia(conjunto,feature,nombre_atributo_objetivo) for feature in atributos] 
+        valores_atributo = [info_ganancia(conjunto,atributo,nombre_atributo_objetivo) for atributo in atributos] 
         indice_mejor_atributo = np.argmax(valores_atributo)
-        mejor_atributo = atributos[indice_mejor_atributo]
+        nombre_mejor_atributo = atributos[indice_mejor_atributo]
         #Crea la estructura del arbol. 
-        tree = {mejor_atributo:{}}
+        arbol = {nombre_mejor_atributo:{}}
         #Elimina el atributo con mejor información de ganancia en el         
-        atributos = [i for i in atributos if i != mejor_atributo]
+        atributos = [i for i in atributos if i != nombre_mejor_atributo]
         # Iteración por cada hijo del nodo padre.
-        for hijo in np.unique(conjunto[mejor_atributo]):
+        for hijo in np.unique(conjunto[nombre_mejor_atributo]):
             # Divide el conjunto a través del valor del atributo con mas información de ganancia y con eso crea el subconjunto
             # El where es como un filter
-            sub_conjunto = conjunto.where(conjunto[mejor_atributo] == hijo).dropna()
+            sub_conjunto = conjunto.where(conjunto[nombre_mejor_atributo] == hijo).dropna()
+            #Para entender los pasos del arbol descomentar esto.
+            #print(nombre_mejor_atributo)
+            #print(sub_conjunto)
             # Llama a la recursión con los nuevos valores
-            subtree = ID3(sub_conjunto,conjunto_original,atributos,nombre_atributo_objetivo,clase_nodo_padre)
+            subarbol = arbol_decision(sub_conjunto,conjunto_original,atributos,nombre_atributo_objetivo,clase_nodo_padre)
             #Agrega el subarbol al dict
-            tree[mejor_atributo][hijo] = subtree
-        return(tree)            
+            arbol[nombre_mejor_atributo][hijo] = subarbol
+        return arbol
     
-def predecir(fila,arbol,default = 1): 
+def predecir(fila,arbol,default = 1): #object[key] -> 
+    #fila = {'Account Balance': 2, 'Payment Status of Previous Credit': 2, 'Value Savings/Stocks': 1, 'Length of current employment': 2, 'Sex & Marital Status': 3, 'Guarantors': 1}
     #Por cada atributo de la fila
+    #fila.keys = [Account Balance,Payment Status of Previous Credit,Value Savings/Stocks,Length of current employment,Sex & Marital Status,Guarantors]
     for atributo in list(fila.keys()):
         # SI existe en el arbol
         if atributo in list(arbol.keys()):
@@ -77,10 +83,12 @@ def predecir(fila,arbol,default = 1):
 
 
 def obtener_clase_predecida(data,arbol):
+    # Crea un dict con todos los valores de cada fila
+    # [{'Account Balance': 2, 'Payment Status of Previous Credit': 2, 'Value Savings/Stocks': 1, 'Length of current employment': 2, 'Sex & Marital Status': 3, 'Guarantors': 1}]
     conjunto_sin_clase_primaria = data.iloc[:,:-1].to_dict(orient = "records")
     #Lista de precciones 
     predicted = []    
-    # Itera cada columna y la predice
+    # Itera cada columna y la predice    
     for i in range(len(data)):
         # Agrega la predicción al árbol
         predicted.append(predecir(conjunto_sin_clase_primaria[i],arbol,1))
