@@ -37,8 +37,8 @@ print("PRECISION: ", obtener_precision(TP_ID3_Test, FP_ID3_Test))
 print("------------------------------------------------------------------------------------------------------------")
 print("Random Forest - Training")
 
-RF_Training = RandomForest(Training_Data, 15)
-RF_Test = RandomForest(Test_Data, 15)
+RF_Training = RandomForest(Training_Data, 25)
+RF_Test = RandomForest(Test_Data, 25)
 pred_Y_RF_Training = RF_obtener_clase_predecida(Training_Data, RF_Training, clase_primaria)
 
 TP_RF_TRAINING, FP_RF_TRAINING, TN_RF_TRAINING, FN_RF_TRAINING = obtener_metricas(actual_Y_Training, pred_Y_RF_Training)

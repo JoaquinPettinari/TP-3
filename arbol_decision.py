@@ -83,10 +83,10 @@ def obtener_clase_predecida(data,arbol):
     # [{'Account Balance': 2, 'Payment Status of Previous Credit': 2, 'Value Savings/Stocks': 1, 'Length of current employment': 2, 'Sex & Marital Status': 3, 'Guarantors': 1}]
     conjunto_sin_clase_primaria = data.iloc[:,:-1].to_dict(orient = "records")
     #Lista de precciones 
-    predicted = []    
+    previsto = []    
     # Itera cada columna y la predice    
     for i in range(len(data)):
         # Agrega la predicción al árbol
-        predicted.append(predecir(conjunto_sin_clase_primaria[i],arbol,1))
-    return predicted
+        previsto.append(predecir(conjunto_sin_clase_primaria[i],arbol,1))
+    return previsto
     
