@@ -1,7 +1,8 @@
-from perceptron import perceptron
+from perceptron import obtener_valores_de_columna, perceptron
 from sklearn import datasets
 import matplotlib.pyplot as plt
 from pandas import DataFrame
+import numpy as np
 
 TP3_1_X = [
     [10.02488611,  5.08333171],
@@ -25,42 +26,32 @@ TP3_1_X = [
     [ 0.23053498,  7.05967085],
     [ 7.63415083,  4.70066552],
 ]
-TP3_1_Y = [0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0]
+TP3_1_Y = [-1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1]
 
-def plot_decision_boundary(X, theta):
-    
-    # X --> Inputs
-    # theta --> parameters
-    
+def plot_decision_boundary(TP_X, theta):
+    X_0 = obtener_valores_de_columna(0, TP_X)
     # The Line is y=mx+c
     # So, Equate mx+c = theta0.X0 + theta1.X1 + theta2.X2
     # Solving we find m and c
-    x1 = [min(X[:,0]), max(X[:,0])]
+    x1 = [min(X_0), max(X_0)]
     m = -theta[1]/theta[2]
     c = -theta[0]/theta[2]
     x2 = m*x1 + c
     
-    plt.plot(X[:, 0][TP3_1_Y==0], X[:, 1][TP3_1_Y==0], "r^")
-    plt.plot(X[:, 0][TP3_1_Y==1], X[:, 1][TP3_1_Y==1], "bs")
-    plt.xlabel("feature 1")
-    plt.ylabel("feature 2")
-    plt.title("Perceptron Algorithm")
-    plt.plot(x1, x2, 'y-')
+    plt.xlabel("x1")
+    plt.ylabel("x2")
+    #plt.plot(x1, x2)
     plt.show()
 
-X, y = datasets.make_blobs(n_samples=20, centers=2, n_features=2, center_box= (0.5,10))
-df = DataFrame(dict(x=[i[0] for i in TP3_1_X], y=[i[1] for i in TP3_1_X], label=TP3_1_Y))
-colores = {0:'red', 1:'blue'}
-print(df)
+df = DataFrame(dict(x1=obtener_valores_de_columna(0, TP3_1_X), x2=obtener_valores_de_columna(1, TP3_1_X), y=TP3_1_Y))
+colores = {-1:'red', 1:'blue'}
 _, ax = plt.subplots()
-print(ax)
-grouped = df.groupby('label')
-print(grouped)
-for key, group in grouped:
-    group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colores[key])
-plt.show()
-"""
-print(df)
-theta, miss_l = perceptron(X, y, 0.5, 100)
-plot_decision_boundary(X, theta)
-"""
+#print(TP3_1_X)
+# Agrupa por los valores de Y
+valores_agrupados = df.groupby('y')
+for valor_Y, grupo in valores_agrupados:
+    grupo.plot(ax=ax, x='x1', y='x2', label=valor_Y, color=colores[valor_Y], kind='scatter')
+
+theta, miss_l = perceptron(TP3_1_X, TP3_1_Y, 0.5, 100)
+print(theta)
+plot_decision_boundary(TP3_1_X, theta)

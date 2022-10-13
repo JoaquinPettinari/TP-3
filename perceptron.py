@@ -3,14 +3,18 @@ import numpy as np
 def step_func(z):
     return 1.0 if (z > 0) else 0.0
 
-def perceptron(X, y, lr, epochs):
-    
+def obtener_valores_de_columna(columna, matriz):
+    return [i[columna] for i in matriz]
+
+def perceptron(TP_X, y, lr, epochs):
+    print(TP_X, y, lr, epochs)
     # X --> Inputs.
     # y --> labels/target.
     # lr --> learning rate.
     # epochs --> Number of iterations.
     
     # m-> number of training examples
+    X = np.matrix(TP_X)
     # n-> number of features 
     m, n = X.shape
     
