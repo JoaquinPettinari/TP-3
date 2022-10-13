@@ -1,7 +1,5 @@
-#positive = "si"
-#negative = "no"
 positive = 1
-negative = 0
+negative = -1
 
 def obtener_metricas(actualCreditabilities, predictionCreditabilities):
         TP = 0
