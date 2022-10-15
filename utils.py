@@ -24,3 +24,9 @@ def obtener_accuracy(TP, FP, TN, FN):
 
 def obtener_precision(TP, FP):
     return TP / (TP + FP)
+
+def obtener_conjunto_entrenamiento(conjunto):
+    return conjunto[:80]
+
+def obtener_conjunto_test(conjunto):
+    return conjunto[-20:]

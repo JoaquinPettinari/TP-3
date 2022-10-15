@@ -1,36 +1,19 @@
-from r2 import obtener_puntos, obtener_valores_de_columna, perceptron, plot_decision_boundary, trazar_linea
-import matplotlib.pyplot as plt
-from pandas import DataFrame
+from r2 import mostrar_puntos_en_plano, obtener_puntos, obtener_valores_de_columna, perceptron, plot_decision_boundary, trazar_linea
+import cv2
+import random
 
-"""
-TP3_1_X = [
-    [10.02488611,  5.08333171],
-    [ 6.86675981,  5.96880721],
-    [ 2.23989814,  4.28353092],
-    [ 7.46134859,  4.58877252],
-    [ 1.57845107,  8.26537513],
-    [ 7.90593303,  4.20733751],
-    [ 0.1661053,  9.58255841],
-    [ 1.95947097,  9.11096293],
-    [ 9.669524,  4.51458008],
-    [ 1.22871378,  9.54865641],
-    [ 6.92799963,  5.40733662],
-    [ 8.05409731,  5.55928774],
-    [ 1.72877019,  9.23272803],
-    [ 1.35649936,  9.91166608],
-    [ 8.31001394,  5.75179727],
-    [ 0.86038413,  7.82138602],
-    [ 7.35736969,  5.13258805],
-    [ 0.47871581,  9.33930476],
-    [ 0.23053498,  7.05967085],
-    [ 7.32133123,  4.70066552],
-]
-"""
+from utils import obtener_conjunto_entrenamiento, obtener_conjunto_test
 
+cielo = cv2.imread("imagenes/cielo.jpg", cv2.IMREAD_COLOR)
+cielo = random.choices(cielo, k=100)
+training_cielo = obtener_conjunto_entrenamiento(cielo[0])
+test_cielo = obtener_conjunto_test(cielo[0])
+print(len(training_cielo))
+print(len(test_cielo))
+"""
 trazar_linea()
 puntos = obtener_puntos()
-print(puntos)
-"""
+mostrar_puntos_en_plano(puntos)
 theta = perceptron(TP3_1_X, TP3_1_Y, 0.5)
 plot_decision_boundary(TP3_1_X, theta)
 """

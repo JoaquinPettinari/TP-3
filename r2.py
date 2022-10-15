@@ -6,7 +6,6 @@ def trazar_linea():
     plt.plot([0,8], [2,10])
 
 def formula_y(x):
-    print(x)
     return x + 2
 
 def obtener_puntos():
@@ -21,8 +20,14 @@ def obtener_puntos():
                 puntos[i,j] = random.uniform(0, 10)
     return puntos
 
-
-
+def mostrar_puntos_en_plano(puntos):
+    X = puntos[:,[0,1]]
+    y = puntos[:,-1]    
+    plt.plot(X[:, 0][y == -1], X[:, 1][y == -1], 'r^')
+    plt.plot(X[:, 0][y == 1], X[:, 1][y == 1], 'bs')
+    plt.xlabel("x1")
+    plt.ylabel("x2")
+    plt.show()
 
 
 
