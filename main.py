@@ -1,19 +1,20 @@
 from cProfile import label
 import cv2
 from imagenes import obtener_conjuntos
-from r2 import mostrar_puntos_en_plano, obtener_puntos, obtener_valores_de_columna, perceptron, plot_decision_boundary, trazar_linea
+from r2 import mostrar_puntos_en_plano, obtener_puntos, perceptron, trazar_linea
 from sklearn import svm
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 import numpy as np
 
-"""
+
 trazar_linea()
 puntos = obtener_puntos()
 mostrar_puntos_en_plano(puntos)
-theta = perceptron(TP3_1_X, TP3_1_Y, 0.5)
-plot_decision_boundary(TP3_1_X, theta)
+
+#perceptron(puntos)
+
 """
 
 print("-------------------")
@@ -52,3 +53,4 @@ for i in range(altura_foto):
         nueva_vaca[i,j] = colores[prediccion[0]]
 
 cv2.imwrite("nueva_vaca.png",nueva_vaca)
+"""
