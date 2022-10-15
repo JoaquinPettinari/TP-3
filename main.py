@@ -5,7 +5,6 @@ from sklearn import svm
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
-from utils import obtener_conjuntos_de_datos
 import numpy as np
 
 """
@@ -16,6 +15,8 @@ theta = perceptron(TP3_1_X, TP3_1_Y, 0.5)
 plot_decision_boundary(TP3_1_X, theta)
 """
 
+print("-------------------")
+print("Punto 2")
 conjuntos_training_X_Random, conjuntos_training_Y_Random, conjuntos_test_X_Random, conjuntos_test_Y_Random = obtener_conjuntos()
 print("Con valores Random")
 clf = svm.SVC()
@@ -35,3 +36,5 @@ pred_conjunto_test_entero = clf.predict(conjuntos_test_X_Entero)
 print(confusion_matrix(conjuntos_test_Y_Entero, pred_conjunto_test_entero, labels=[0,1,2]))
 print(f"Accuracy: {100*accuracy_score(conjuntos_test_Y_Entero, pred_conjunto_test_entero)}%")
 print(f"Precision: {100*precision_score(conjuntos_test_Y_Entero, pred_conjunto_test_entero, average='micro')}%")
+print("-------------------")
+
