@@ -1,4 +1,5 @@
 from cProfile import label
+import cv2
 from imagenes import obtener_conjuntos
 from r2 import mostrar_puntos_en_plano, obtener_puntos, obtener_valores_de_columna, perceptron, plot_decision_boundary, trazar_linea
 from sklearn import svm
@@ -38,3 +39,16 @@ print(f"Accuracy: {100*accuracy_score(conjuntos_test_Y_Entero, pred_conjunto_tes
 print(f"Precision: {100*precision_score(conjuntos_test_Y_Entero, pred_conjunto_test_entero, average='micro')}%")
 print("-------------------")
 
+img = cv2.imread("imagenes/cow.jpg", cv2.IMREAD_COLOR)
+colores = {0: [255, 0, 0], 1: [0, 255, 0], 2: [0, 0, 255]}
+
+ancho_foto = len(img[0])
+altura_foto = len(img)
+nueva_vaca = np.zeros((altura_foto, ancho_foto, 3),np.uint8)
+
+for i in range(altura_foto):
+    for j in range(ancho_foto):
+        prediccion = clf.predict([img[i][j]])
+        nueva_vaca[i,j] = colores[prediccion[0]]
+
+cv2.imwrite("nueva_vaca.png",nueva_vaca)
