@@ -11,11 +11,7 @@ import numpy as np
 
 trazar_linea()
 puntos = obtener_puntos()
-mostrar_puntos_en_plano(puntos)
-
-#perceptron(puntos)
-
-"""
+#mostrar_puntos_en_plano(puntos)
 
 print("-------------------")
 print("Punto 2")
@@ -53,4 +49,3 @@ for i in range(altura_foto):
         nueva_vaca[i,j] = colores[prediccion[0]]
 
 cv2.imwrite("nueva_vaca.png",nueva_vaca)
-"""
