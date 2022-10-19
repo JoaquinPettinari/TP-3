@@ -1,7 +1,7 @@
-from cProfile import label
 import cv2
 from imagenes import obtener_conjuntos
-from r2 import mostrar_puntos_en_plano, obtener_puntos, perceptron, trazar_linea
+from perceptron import perceptron
+from r2 import mostrar_puntos_en_plano, obtener_puntos, trazar_linea
 from sklearn import svm
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -9,15 +9,19 @@ from sklearn.metrics import precision_score
 import numpy as np
 
 
-trazar_linea()
 puntos = obtener_puntos()
-#mostrar_puntos_en_plano(puntos)
 
+
+pesos = perceptron(puntos)
+"""
+#trazar_linea(pesos[0], pesos[1] )
+#mostrar_puntos_en_plano(puntos)
+print(pesos)
 print("-------------------")
 print("Punto 2")
 conjuntos_training_X_Random, conjuntos_training_Y_Random, conjuntos_test_X_Random, conjuntos_test_Y_Random = obtener_conjuntos()
 print("Con valores Random")
-clf = svm.SVC()
+clf = svm.SVC(kernel='linear', C=1000)
 clf.fit(conjuntos_training_X_Random, conjuntos_training_Y_Random)
 pred_conjunto_test_entero = clf.predict(conjuntos_test_X_Random)
 
@@ -49,3 +53,5 @@ for i in range(altura_foto):
         nueva_vaca[i,j] = colores[prediccion[0]]
 
 cv2.imwrite("nueva_vaca.png",nueva_vaca)
+
+"""

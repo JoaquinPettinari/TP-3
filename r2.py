@@ -32,36 +32,3 @@ def mostrar_puntos_en_plano(puntos):
     plt.xlabel("x")
     plt.ylabel("y")
     plt.show()
-
-def perceptron(puntos):
-    pesos = np.array([
-        [0], 
-        [0], 
-    ])
-    entradas = puntos[:,[0,1]]
-    #Columna de Y
-    y = puntos[:,-1]
-    salidas = np.array([[int(punto)] for punto in y])
-    tasa_de_aprendizaje = 0.1
-    error = 1
-    i = 0
-    cota = 1000
-    while(error > 0 & i < cota):
-        print(salidas)
-        exitacion = np.dot(entradas[i], pesos) #Multiplicaciones de w1*x1+w2*x2
-        activacion = signo(exitacion)
-        error = calcular_error(salidas[i], activacion) #Error cometido, (Aprendizaje supervisado)
-        ajuste = tasa_de_aprendizaje*error #Ajustar el error en base a la tasa de aprendizaje 
-        pesos = ajustar_pesos(entradas[i], pesos, ajuste[0]) #Actualiza los nuevos valores de los pesos ajustados
-        i+=1
-    return pesos
-
-def signo(exitacion):
-    return 1 if (exitacion >= 0) else 0	
-
-def calcular_error(salida, activacion):
-	return salida-activacion
-
-def ajustar_pesos(entradas, pesos, ajuste):
-	suma_entradas_ajuste = np.array([entradas*ajuste]).T
-	return np.add(pesos, suma_entradas_ajuste)#Actualiza los pesos, sumandole el ajuste
