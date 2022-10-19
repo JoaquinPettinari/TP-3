@@ -38,7 +38,6 @@ def signo(exitacion):
 
 def multiplicar_listas(lista1, lista2):
 	resultado = 0
-	#print(lista1, lista2)
 	for i in range(len(lista1)):
 		resultado += lista1[i] * lista2[i]
 	return resultado
