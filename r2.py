@@ -2,8 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
-def trazar_linea():
-    plt.plot([0,5], [2,7])
+def trazar_linea(w, puntos):
+    #plt.plot([0,5], [2,7])
+    x=[]
+    y=[]
+    for punto in puntos:
+        x.append(punto[0])
+        y.append(-w[1]/w[2]*punto[0]-w[0]/w[2])
+    #print(x,y)
+    plt.plot(x,y)
+
 
 def formula_y(x):
     return x + 2

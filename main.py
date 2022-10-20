@@ -13,9 +13,13 @@ puntos = obtener_puntos()
 
 
 pesos = perceptron(puntos)
+#pesos = [0.5, 1.70470572, -0.64141028]
+print(pesos)
+trazar_linea(pesos, puntos)
+mostrar_puntos_en_plano(puntos)
+
 """
 #trazar_linea(pesos[0], pesos[1] )
-#mostrar_puntos_en_plano(puntos)
 print(pesos)
 print("-------------------")
 print("Punto 2")
