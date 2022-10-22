@@ -1,9 +1,9 @@
 import cv2
 import random
 
-from utils import flattenList, obtener_conjuntos_de_datos, obtener_y_de_imagen
+from utils import flattenList, obtener_conjuntos_de_datos, poner_clase_de_imagen
 
-def obtener_conjuntos(con_valores_random=True):
+def obtener_conjuntos_de_imagenes(con_valores_random=True):
 
     conjuntos_training_X = []
     conjuntos_training_Y = []
@@ -23,8 +23,8 @@ def obtener_conjuntos(con_valores_random=True):
         training_imagen, test_imagen = obtener_conjuntos_de_datos(img)
         # Punto 2. a
         # Valores Y de las imagenes. Clase 0 -> [0,0,0,0,0,0..0]
-        training_Y = obtener_y_de_imagen(len(training_imagen), i)
-        test_Y = obtener_y_de_imagen(len(test_imagen), i)
+        training_Y = poner_clase_de_imagen(training_imagen, i)
+        test_Y = poner_clase_de_imagen(test_imagen, i)
         
         conjuntos_training_X.append(training_imagen)
         conjuntos_test_X.append(test_imagen)

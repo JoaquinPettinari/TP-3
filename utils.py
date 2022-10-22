@@ -1,5 +1,11 @@
 import numpy as np
 
+def obtener_conjuntos_training_test(conjunto):
+    conjunto_X, conjunto_Y = separar_conjunto(conjunto)
+    X_Training, X_Test = obtener_conjuntos_de_datos(conjunto_X)
+    Y_Training, Y_Test = obtener_conjuntos_de_datos(conjunto_Y)
+    return X_Training, Y_Training, X_Test, Y_Test
+
 def obtener_conjuntos_de_datos(conjunto):
     p80 = len(conjunto) * 0.80
     p20 = len(conjunto) * 0.20
@@ -7,6 +13,11 @@ def obtener_conjuntos_de_datos(conjunto):
 
 def flattenList(list):
     return [item for sublist in list for item in sublist]
+
+def separar_conjunto(conjunto):
+    X = np.array(conjunto)[:,[0,1]]
+    y = np.array(conjunto)[:,-1]
+    return X, y
 
 def clasificar_imagen(conjunto, clase):
     nuevo_conjunto = np.empty((len(conjunto), 4))
@@ -18,5 +29,5 @@ def clasificar_imagen(conjunto, clase):
                 nuevo_conjunto[i,j] = conjunto[i,j]
     return nuevo_conjunto
 
-def obtener_y_de_imagen(cantidad, clase):
-    return [clase for i in range(cantidad)]
+def poner_clase_de_imagen(conjunto, clase):
+    return [clase for i in range(len(conjunto))]
