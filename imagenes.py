@@ -1,10 +1,10 @@
 import cv2
 import random
+import numpy as np
 
 from utils import flattenList, obtener_conjuntos_de_datos, poner_clase_de_imagen
 
 def obtener_conjuntos_de_imagenes(con_valores_random=True):
-
     conjuntos_training_X = []
     conjuntos_training_Y = []
     conjuntos_test_X = []
@@ -39,3 +39,21 @@ def obtener_conjuntos_de_imagenes(con_valores_random=True):
             conjuntos_test_Y = flattenList(conjuntos_test_Y)
     
     return conjuntos_training_X, conjuntos_training_Y, conjuntos_test_X, conjuntos_test_Y
+
+
+def dibujar_vacas(clf):
+    colores = {0: [255, 0, 0], 1: [0, 255, 0], 2: [0, 0, 255]}
+
+    for i, vaca_nombre_archivo, in enumerate(["cow.jpg","vaca_milka.jpeg", "vaca_milka_2.jpeg", "vaca_milka_3.jpeg"]):
+        vaca = cv2.imread("imagenes/"+vaca_nombre_archivo, cv2.IMREAD_COLOR)
+
+        ancho_foto = len(vaca[0])
+        altura_foto = len(vaca)
+        nueva_vaca = np.zeros((altura_foto, ancho_foto, 3),np.uint8)
+
+        for i in range(altura_foto):
+            for j in range(ancho_foto):
+                prediccion = clf.predict([vaca[i][j]])
+                nueva_vaca[i,j] = colores[prediccion[0]]
+        nombre_archivo = vaca_nombre_archivo.split(".")[0] #["cow", "jpg"]
+        cv2.imwrite("resultados/"+nombre_archivo +".png",nueva_vaca)

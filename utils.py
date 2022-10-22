@@ -1,4 +1,7 @@
 import numpy as np
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
 
 def obtener_conjuntos_training_test(conjunto):
     conjunto_X, conjunto_Y = separar_conjunto(conjunto)
@@ -31,3 +34,8 @@ def clasificar_imagen(conjunto, clase):
 
 def poner_clase_de_imagen(conjunto, clase):
     return [clase for i in range(len(conjunto))]
+
+def print_metricas(test_Y, conjunto_prediccion, labels=[0,1,2]):
+    print(confusion_matrix(test_Y, conjunto_prediccion, labels=labels))
+    print(f"Accuracy: {100*accuracy_score(test_Y, conjunto_prediccion)}%")
+    print(f"Precision: {100*precision_score(test_Y, conjunto_prediccion, average='micro')}%")
